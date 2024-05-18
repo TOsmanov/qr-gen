@@ -1,3 +1,4 @@
+output/
 tests/output/
 tests/fonts/
 *.exe
