@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/draw"
 	"image/jpeg"
-	"log"
 	"os"
 
 	"github.com/fogleman/gg"
@@ -14,19 +13,21 @@ import (
 
 func Generation(list []string,
 	size int, qr bool, backgroundImg image.Image, font string,
-	hAlign float64, vAlign float64, output string) {
+	horizontalAlign int, verticalAlign int, output string) error {
+	hAlign := float64(horizontalAlign) / 100
+	vAlign := float64(verticalAlign) / 100
 	var err error
 	for _, data := range list {
 		var upperImg image.Image
 		if qr {
 			upperImg, err = prepareQR(size, data)
 			if err != nil {
-				log.Fatalf("Error write file: %v", err)
+				return err
 			}
 		} else {
 			upperImg = prepareText(size, font, data)
 			if err != nil {
-				log.Fatalf("Error write file: %v", err)
+				return err
 			}
 		}
 		x := int(float64(backgroundImg.Bounds().Dx())*hAlign) - size/2
@@ -39,7 +40,7 @@ func Generation(list []string,
 		os.Mkdir(output, 0750)
 		out, err := os.Create(fmt.Sprintf("%s/%s.jpg", output, data))
 		if err != nil {
-			fmt.Println(err)
+			return err
 		}
 
 		var opt jpeg.Options
@@ -47,6 +48,7 @@ func Generation(list []string,
 
 		jpeg.Encode(out, rgba, &opt)
 	}
+	return nil
 }
 
 func prepareQR(qrSize int, data string) (image.Image, error) {
@@ -55,9 +57,6 @@ func prepareQR(qrSize int, data string) (image.Image, error) {
 		return nil, err
 	}
 	qrImg := qr.Image(qrSize)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	return qrImg, nil
 }
 

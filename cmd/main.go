@@ -48,8 +48,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-	hAlign := float64(horizontalAlign) / 100
-	vAlign := float64(verticalAlign) / 100
 
 	backgroundImg, err := qrgen.PrepareBackground(background)
 	if err != nil {
@@ -61,5 +59,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	qrgen.Generation(list, size, qr, backgroundImg, font, hAlign, vAlign, output)
+	err = qrgen.Generation(list, size, qr, backgroundImg, font, horizontalAlign, verticalAlign, output)
+	if err != nil {
+		log.Fatalf("Error write file: %v", err)
+	}
 }

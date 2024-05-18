@@ -13,13 +13,15 @@ import (
 func TestGenerationQR(t *testing.T) {
 	os.RemoveAll("../tests/output/")
 	list, err := PrepareData("../tests/data.txt")
+	fmt.Println(list)
 	assert.Nil(t, err)
 	backgroundImg, err := PrepareBackground("../tests/background.jpg")
 	assert.Nil(t, err)
 
-	Generation(list, 200, true, backgroundImg,
-		"../tests/fonts/DroidSansMono.ttf", 50, 50,
-		"../tests/output")
+	err = Generation(
+		list, 120, true, backgroundImg,
+		"", 50, 75, "../tests/output/")
+	assert.Nil(t, err)
 
 	// Comparing the number of files in a folder
 	output, err := os.ReadDir("../tests/output/")
@@ -46,7 +48,7 @@ func TestGenerationQR(t *testing.T) {
 		assert.Equal(t, sum2, sum1)
 	}
 
-	os.RemoveAll("../tests/output/")
+	// os.RemoveAll("../tests/output/")
 }
 
 func getMD5SumString(f *os.File) (string, error) {
