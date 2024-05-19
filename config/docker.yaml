@@ -1,0 +1,9 @@
+enviroment: "docker"
+
+qrGen:
+    outputFolder: "output"
+
+httpServer:
+    address: "qr-gen:10001"
+    timeout: 4s
+    idleTimeout: 60s

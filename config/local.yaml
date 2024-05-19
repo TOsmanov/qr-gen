@@ -1,0 +1,9 @@
+enviroment: "local"
+
+qrGen:
+    outputFolder: "output"
+
+httpServer:
+    address: "localhost:10001"
+    timeout: 4s
+    idleTimeout: 60s

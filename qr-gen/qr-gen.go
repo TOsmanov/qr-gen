@@ -13,12 +13,18 @@ import (
 
 func Generation(list []string,
 	size int, qr bool, backgroundImg image.Image, font string,
-	horizontalAlign int, verticalAlign int, output string) error {
+	horizontalAlign int, verticalAlign int, output string, preview bool) error {
 	hAlign := float64(horizontalAlign) / 100
 	vAlign := float64(verticalAlign) / 100
 	var err error
+	if preview {
+		list = []string{
+			"https://github.com/TOsmanov/qr-gen",
+		}
+	}
 	for _, data := range list {
 		var upperImg image.Image
+		var filename string
 		if qr {
 			upperImg, err = prepareQR(size, data)
 			if err != nil {
@@ -38,7 +44,12 @@ func Generation(list []string,
 		draw.Draw(rgba, backgroundImg.Bounds(), backgroundImg, image.Point{0, 0}, draw.Src)
 		draw.Draw(rgba, backgroundImg.Bounds(), upperImg, point, draw.Src)
 		os.Mkdir(output, 0750)
-		out, err := os.Create(fmt.Sprintf("%s/%s.jpg", output, data))
+		if preview {
+			filename = "preview"
+		} else {
+			filename = data
+		}
+		out, err := os.Create(fmt.Sprintf("%s/%s.jpg", output, filename))
 		if err != nil {
 			return err
 		}

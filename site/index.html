@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!-- -file ./tests/data.txt -background ./tests/background.jpg -size 120 -h-align 50 -v-align 75 -output output -->
+<html lang="en" class="notranslate" translate="no" data-theme="dark">
+<head>
+    <script>
+        async function postData(url = '', data = {}) {
+            const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams(data).toString()
+            });
+            return response.json();
+        }
+        function postDataPreview() {
+            postData('/preview/', { 'param1': 'value1' })
+                .then(data => console.log(data))
+                .catch(error => console.error('Ошибка:', error))
+        }
+        function postDataGeneration() {
+            postData('/generation/', { 'param1': 'value1' })
+                .then(data => console.log(data))
+                .catch(error => console.error('Ошибка:', error))
+        }
+    </script>
+    <style>
+        #main {
+            display: flex
+        }
+        #form, #preview {
+            width:50%;
+            height: 90vh
+        }
+        #form {
+            fieldset > * {
+                display: block;
+                padding: .5rem
+            }
+            textarea {
+                margin-top: .5rem;
+                margin-bottom: .5rem;
+                width: 100%;
+                height: 60vh;
+            }
+            input {
+                position: absolute;
+                right: 51.75%;
+            }
+        }
+        #preview {
+            p {
+                text-align: center;
+            }
+        }
+        #buttons {
+            display:flex;
+            width: 95%;
+            position: absolute;
+            bottom: 25px;
+            text-align: center;
+            > button {
+                margin-inline: auto;
+                margin-block: .1rem;
+                font-size: 1.4rem;
+                padding: 4px;
+            }
+        }
+    </style>
+    <meta charSet="utf-8"/>
+    <title>QR-Gen пакетный генератор QR-кодов</title>
+</head>
+<body>
+    <div id="main">
+        <div id="form">
+            <form method="post">
+                <fieldset>
+                    <legend>Параметры расположения</legend>
+                    <label for='uploadFile'><b>Фоновое изображение: </b><input type='file' id='uploadFile' multiple></label>
+                    <label><b>Размер QR-кода в пикселях:</b><input type="size" placeholder="120"></input></label>
+                    <label><b>Горизонтальное смещение (от 0 до 100): </b><input type="h-align" placeholder="50"></input></label>
+                    <label><b>Вертикальное смещение (от 0 до 100): </b><input type="v-align" placeholder="70"></input></label>
+                    <label><b>Данные :</b>
+                    <textarea title="Добавьте сюда данные которые нужно зашифровать в qr-код" placeholder="https://example.com/link-1/
+https://example.com/link-2/"></textarea>
+                </fieldset>
+            </form>
+        </div>
+        <div id="preview"><p style="opacity: .5;margin: 17%;position:absolute;">Здесь будет превью изображения</p><img src="/preview.jpg"></img></div>
+        <div id="buttons">
+            <button type="generation" onclick="postDataGeneration()">Сгенерировать архив</button>
+            <button type="preview" onclick="postDataPreview()">Обновить превью</button>
+        </div>
+    </div>
+</body>
+</html>

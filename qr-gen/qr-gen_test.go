@@ -20,7 +20,7 @@ func TestGenerationQR(t *testing.T) {
 
 	err = Generation(
 		list, 120, true, backgroundImg,
-		"", 50, 75, "../tests/output/")
+		"", 50, 75, "../tests/output/", false)
 	assert.Nil(t, err)
 
 	// Comparing the number of files in a folder

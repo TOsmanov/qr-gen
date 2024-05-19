@@ -59,7 +59,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = qrgen.Generation(list, size, qr, backgroundImg, font, horizontalAlign, verticalAlign, output)
+	err = qrgen.Generation(list, size, qr, backgroundImg, font, horizontalAlign, verticalAlign, output, false)
 	if err != nil {
 		log.Fatalf("Error write file: %v", err)
 	}
