@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 )
 
-func Archive(inputFolder string, outputFolder string) error {
-	file, err := os.Create(outputFolder)
+func Archive(inputFolder string, outputPath string) error {
+	file, err := os.Create(outputPath)
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,8 @@ func Archive(inputFolder string, outputFolder string) error {
 		}
 		defer file.Close()
 
-		f, err := w.Create(path)
+		filename := filepath.Base(path)
+		f, err := w.Create(filename)
 		if err != nil {
 			return err
 		}

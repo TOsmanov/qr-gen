@@ -1,6 +1,8 @@
 package qrgen
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"image"
 	"image/draw"
@@ -83,3 +85,22 @@ func prepareText(size int, font string, data string) image.Image {
 	dc.DrawStringAnchored(data, float64(size/2), fontSize*1.3/2, 0.5, 0.5)
 	return dc.Image()
 }
+
+// func GetMD5TempFile(file multipart.File) (string, error) {
+// 	hash := md5.New()
+// 	if _, err := file.Seek(0, 0); err != nil {
+// 		return "", err
+// 	}
+// 	if _, err := io.Copy(hash, file); err != nil {
+// 		return "", err
+// 	}
+// 	md5 := hex.EncodeToString(hash.Sum(nil))
+// 	return md5, nil
+// }
+
+func GetMD5TempFile(data []byte) string {
+	hash := md5.Sum(data)
+	return hex.EncodeToString(hash[:])
+}
+
+// TODO Clean Temp files

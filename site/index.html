@@ -5,26 +5,136 @@
     <script>
         async function postData(url = '', data = {}) {
             const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams(data).toString()
+                method: 'POST',
+                // headers: {
+                //     'Content-Type': 'application/x-www-form-urlencoded'
+                // },
+                body: new URLSearchParams(data).toString()
             });
             return response.json();
         }
-        function postDataPreview() {
-            postData('/preview/', { 'param1': 'value1' })
-                .then(data => console.log(data))
-                .catch(error => console.error('Ошибка:', error))
+        async function Preview() {
+            if (document.querySelector('input[type="file"]').files.length > 0) {
+                imgHash = await uploadData()
+                if (imgHash) {
+                    const resp = await fetch('/preview', {
+                        method: 'POST',
+                        contentType: "application/json",
+                        body: JSON.stringify({
+                            'size': Number(document.querySelector('input[type="size"]').value),
+                            'background': String(imgHash),
+                            'h-align': Number(document.querySelector('input[type="h-align"]').value),
+                            'v-align': Number(document.querySelector('input[type="v-align"]').value)
+                        })
+                    })
+                    await resp;
+
+                    hiddenImg = new Image();
+                    hiddenImg.src = `/preview.jpg?${Date.now()}`;
+
+                    document.querySelector('img').src = hiddenImg.src
+                    document.querySelector('#preview > p').hidden = true
+                    if (resp.status !== 200) {
+                        throw new Error(respData.message);
+                    }
+                }
+            } else {
+                alert("Необходимо выбрать фоновое изображение")
+            }
         }
-        function postDataGeneration() {
-            postData('/generation/', { 'param1': 'value1' })
-                .then(data => console.log(data))
-                .catch(error => console.error('Ошибка:', error))
+        async function Generation() {
+            if (document.querySelector('input[type="file"]').files.length > 0 && document.querySelector('textarea').value) {
+                imgHash = await uploadData()
+                if (imgHash) {
+                    await fetch('/generation', {
+                        method: 'POST',
+                        contentType: "application/json",
+                        body: JSON.stringify({
+                            'list': String(document.querySelector('textarea').value).split('\n'),
+                            'size': Number(document.querySelector('input[type="size"]').value),
+                            'background': String(imgHash),
+                            'h-align': Number(document.querySelector('input[type="h-align"]').value),
+                            'v-align': Number(document.querySelector('input[type="v-align"]').value)
+                        })
+                    })
+                        .then(resp => resp.blob())
+                        .then(blob => {
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            let today = new Date()
+                            let dd = today.getDate();
+                            let mm = today.getMonth();
+                            let yyyy = today.getFullYear();
+                            link.download = `qrgen_archive_${dd}_${mm}_${yyyy}.zip`;
+                            link.click();
+                        }).catch(error => console.error('Error downloading file:', error));
+                    // await resp;
+                    // response.blob()
+           
+                    // downloadFileFromURL(resp.data, `qrgen_archive_${dd}_${mm}_${yyyy}.zip`);
+                    // if (resp.status !== 200) {
+                    //     throw new Error(respData.message);
+                    // }
+                }
+            } else {
+                alert("Заполните обязательные поля формы")
+            }
+        }
+        // function downloadFileFromURL(url, fileName) {
+        //     fetch(url)
+        //         .then(response => response.blob())
+        //         .then(blob => {
+        //         const link = document.createElement('a');
+        //         link.href = URL.createObjectURL(blob);
+        //         link.download = fileName;
+        //         link.click();
+        //         })
+        //         .catch(error => console.error('Error downloading file:', error));
+        // }
+        // async function Generation() {
+        //     if (document.querySelector('input[type="file"]').files.length > 0) {
+        //         imgHash = await uploadData()
+        //         if (imgHash.length > 0 ) {
+        //             await postData('/generation', 
+        //                 {
+        //                     'list': document.querySelector('textarea').value,
+        //                     'size': document.querySelector('input[type="size"]').value,
+        //                     'background': String(imgHash),
+        //                     'h-align': document.querySelector('input[type="h-align"]').value,
+        //                     'v-align': document.querySelector('input[type="v-align"]').value
+        //             })
+        //                 .then(data => console.log(data))
+        //                 .catch(error => console.error('Ошибка:', error))
+        //         }
+        //     } else {
+        //         alert("Необходимо выбрать фоновое изображение")
+        //     }
+        // }
+
+        async function uploadData() {
+            const imageFile = document.querySelector('input[type="file"]').files[0]
+            const formdata = new FormData();
+            formdata.append('img', imageFile);
+            const resp = await fetch('/background', {
+                method: 'POST',
+                // credentials: 'include',
+                // headers: {
+                //     Accept: 'application/json'
+                // },
+                body: formdata
+            })
+            respData =  await resp.json();
+            if (resp.status !== 200) {
+                alert("Необходимо выбрать фоновое изображение")
+                throw new Error(respData.message);
+            }
+            return respData.data;
         }
     </script>
     <style>
+        body {
+            background: #d6d6d6;
+        }
         #main {
             display: flex
         }
@@ -40,7 +150,7 @@
             textarea {
                 margin-top: .5rem;
                 margin-bottom: .5rem;
-                width: 100%;
+                width: 98.5%;
                 height: 60vh;
             }
             input {
@@ -49,8 +159,12 @@
             }
         }
         #preview {
+            display: flex;
             p {
                 text-align: center;
+            }
+            img {
+                margin: auto;
             }
         }
         #buttons {
@@ -73,23 +187,44 @@
 <body>
     <div id="main">
         <div id="form">
-            <form method="post">
+            <form method="put" enctype="multipart/form-data">
                 <fieldset>
                     <legend>Параметры расположения</legend>
-                    <label for='uploadFile'><b>Фоновое изображение: </b><input type='file' id='uploadFile' multiple></label>
-                    <label><b>Размер QR-кода в пикселях:</b><input type="size" placeholder="120"></input></label>
-                    <label><b>Горизонтальное смещение (от 0 до 100): </b><input type="h-align" placeholder="50"></input></label>
-                    <label><b>Вертикальное смещение (от 0 до 100): </b><input type="v-align" placeholder="70"></input></label>
-                    <label><b>Данные :</b>
-                    <textarea title="Добавьте сюда данные которые нужно зашифровать в qr-код" placeholder="https://example.com/link-1/
+                    <!-- <label for='uploadFile'></label>
+                        <b>Фоновое изображение: </b>
+                        <form action="/background" method="post" enctype="multipart/form-data">
+                            <input type="file" name="image" />
+                        </form>
+                    </label> -->
+                    <label for='uploadFile'>
+                        <b>Фоновое изображение*</b><input type='file' name='image'/>
+                        <!-- <button id='background' style="display: none;" type="submit"></button> -->
+                    </label>
+                    <label>
+                        <b>Размер QR-кода в пикселях</b>
+                        <input type="size" value="120"></input>
+                    </label>
+                    <label>
+                        <b>Горизонтальное смещение (от 0 до 100)</b>
+                        <input type="h-align" value="50"></input>
+                    </label>
+                    <label>
+                        <b>Вертикальное смещение (от 0 до 100)</b>
+                        <input type="v-align" value="70"></input>
+                    </label>
+                    <label>
+                        <b>Данные*</b>
+                        <textarea title="Добавьте сюда данные которые нужно зашифровать в qr-код" placeholder="https://example.com/link-1/
 https://example.com/link-2/"></textarea>
+                    </label>
+
                 </fieldset>
             </form>
         </div>
-        <div id="preview"><p style="opacity: .5;margin: 17%;position:absolute;">Здесь будет превью изображения</p><img src="/preview.jpg"></img></div>
+        <div id="preview"><p style="opacity: .5;margin: 17%;position:absolute;">Здесь будет превью изображения</p><img></div>
         <div id="buttons">
-            <button type="generation" onclick="postDataGeneration()">Сгенерировать архив</button>
-            <button type="preview" onclick="postDataPreview()">Обновить превью</button>
+            <button type="generation" onclick="Generation()">Сгенерировать архив</button>
+            <button type="preview" onclick="Preview()">Обновить превью</button>
         </div>
     </div>
 </body>

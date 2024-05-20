@@ -1,4 +1,6 @@
 output/
 tests/output/
 tests/fonts/
+temp/
+site/preview.jpg
 *.exe

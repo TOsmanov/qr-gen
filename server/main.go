@@ -31,8 +31,9 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.HandleFunc("/", handlers.IndexHandler(log))
+	router.HandleFunc("/background", handlers.BackgroundHandler(log))
 	router.HandleFunc("/preview", handlers.PreviewHandler(log))
-	router.HandleFunc("/qrgen", handlers.GenerationHandler(log))
+	router.HandleFunc("/generation", handlers.GenerationHandler(log))
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -79,5 +80,5 @@ func setupLogger(env string) *slog.Logger {
 }
 
 func Clean() {
-
+	// TODO: clean temp files and preview.jpg
 }

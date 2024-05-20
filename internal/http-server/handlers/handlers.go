@@ -9,14 +9,12 @@ import (
 
 type Response struct {
 	response.Response
-	Message any `json:"data,omitempty"`
+	Body any `json:"data,omitempty"`
 }
 
 func IndexHandler(log *slog.Logger) http.HandlerFunc {
-	slog.Info("IndexHandler")
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.IndexHandler"
-		slog.Info(op)
 		log = log.With(
 			slog.String("op", op),
 		)
@@ -24,14 +22,28 @@ func IndexHandler(log *slog.Logger) http.HandlerFunc {
 	}
 }
 
-func PreviewHandler(log *slog.Logger) http.HandlerFunc {
+func BackgroundHandler(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.PreviewHandler"
-		slog.Info(op)
+		const op = "handlers.BackgroundHandler"
 		log = log.With(
 			slog.String("op", op),
 		)
-		GetPreview(log, w, r)
+		UploadBackground(log, w, r)
+	}
+}
+
+func PreviewHandler(log *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "handlers.PreviewHandler"
+		log = log.With(
+			slog.String("op", op),
+		)
+		switch r.Method {
+		case http.MethodGet:
+			GetPreview(log, w, r)
+		case http.MethodPost:
+			PostPreview(log, w, r)
+		}
 	}
 }
 
@@ -42,6 +54,6 @@ func GenerationHandler(log *slog.Logger) http.HandlerFunc {
 		log = log.With(
 			slog.String("op", op),
 		)
-		GetDownlaodLink(log, w, r)
+		GenerationQR(log, w, r)
 	}
 }

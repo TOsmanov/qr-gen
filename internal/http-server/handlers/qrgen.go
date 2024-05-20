@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
-	"image"
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/TOsmanov/qr-gen/internal/lib/api/response"
 	qrgen "github.com/TOsmanov/qr-gen/qr-gen"
@@ -15,11 +16,11 @@ import (
 )
 
 type QRParams struct {
-	list       []string
-	size       int
-	background image.Image
-	hAlign     int
-	vAlign     int
+	List       []string `json:"list,omitempty"`
+	Size       int      `json:"size"`
+	Background string   `json:"background"`
+	HorizAlign int      `json:"h-align"`
+	VertAlign  int      `json:"v-align"`
 }
 
 func Index(log *slog.Logger, w http.ResponseWriter,
@@ -33,30 +34,162 @@ func GetPreview(log *slog.Logger, w http.ResponseWriter,
 	r *http.Request,
 ) {
 	const op = "handlers.OrderHandler.GetPreview"
+	buf, err := os.ReadFile("site/preview.jpg")
+	if err != nil {
+		log.Error(
+			"Failed to prepare background",
+			fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r,
+			response.Error("Failed to get preview"))
+	}
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(buf)
+}
+
+func UploadBackground(log *slog.Logger, w http.ResponseWriter,
+	r *http.Request,
+) {
+	const op = "handlers.OrderHandler.UploadBackground"
+	r.ParseMultipartForm(32 << 20) // 32 MB
+	file, _, err := r.FormFile("img")
+	if err != nil {
+		log.Error("Failed to read image from request", fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r, response.Error("Failed to read image from request"))
+		return
+	}
+	defer file.Close()
+
+	var data []byte
+	data, err = io.ReadAll(file)
+	if err != nil {
+		log.Error("Failed to read data", fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r, response.Error("Failed to read data"))
+		return
+	}
+
+	sum := qrgen.GetMD5TempFile(data)
+	tempDir := "./temp/"
+	err = os.MkdirAll(tempDir, os.ModePerm)
+	if err != nil {
+		log.Error("Failed to create temp directory", fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r, response.Error("Failed to create temp directory"))
+		return
+	}
+
+	if _, err := os.Stat(tempDir + sum + ".jpg"); errors.Is(err, os.ErrNotExist) {
+		tempFile, err := os.Create(tempDir + sum + ".jpg")
+		if err != nil {
+			log.Error("Failed to create temp file", fmt.Errorf("%s: %w", op, err))
+			render.JSON(w, r, response.Error("Failed to create temp file"))
+			return
+		}
+		defer tempFile.Close()
+		_, err = tempFile.Write(data)
+		if err != nil {
+			log.Error("Failed to write temp file", fmt.Errorf("%s: %w", op, err))
+			render.JSON(w, r, response.Error("Failed to read image from request"))
+			return
+		}
+	}
+	log.Info("The background image has been uploaded successfully")
+	responseOK(w, r, sum)
+}
+
+func PostPreview(log *slog.Logger, w http.ResponseWriter,
+	r *http.Request,
+) {
+	const op = "handlers.OrderHandler.PostPreview"
 	var params QRParams
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Error("Failed to read request", fmt.Errorf("%s: %w", op, err))
 		render.JSON(w, r, response.Error("Failed to read request"))
-		return
 	}
 	defer r.Body.Close()
+
 	json.Unmarshal(b, &params)
-	qrgen.Generation(params.list, params.size, false, params.background, "", params.hAlign, params.vAlign, "site", true)
-	responseOK(w, r, "The order has been successfully added")
+
+	backgroundImg, err := qrgen.PrepareBackground("./temp/" + params.Background + ".jpg")
+	if err != nil {
+		log.Error(
+			"Failed to prepare background",
+			fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r,
+			response.Error("Failed to prepare preview"))
+	}
+
+	var list []string
+
+	qrgen.Generation(list, params.Size, true, backgroundImg, "", params.HorizAlign, params.VertAlign, "site", true)
+	buf, err := os.ReadFile("temp/preview/preview.jpg")
+	if err != nil {
+		log.Error(
+			"Failed to prepare background",
+			fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r,
+			response.Error("Failed to prepare preview"))
+	}
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(buf)
+	responseOK(w, r, "The preview has been successfully generate")
+
+	// TODO: Clean()
 }
 
-func GetDownlaodLink(log *slog.Logger, w http.ResponseWriter,
+func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	r *http.Request,
 ) {
-	const op = "handlers.OrderHandler.GetDownlaodLink"
+	const op = "handlers.OrderHandler.Generation"
 	slog.Info(op)
-	responseOK(w, r, "The order has been successfully added")
+	log.Debug("params", r)
+	var params QRParams
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Error("Failed to read request", fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r, response.Error("Failed to read request"))
+	}
+	defer r.Body.Close()
+
+	json.Unmarshal(b, &params)
+	backgroundImg, err := qrgen.PrepareBackground("./temp/" + params.Background + ".jpg")
+	if err != nil {
+		log.Error(
+			"Failed to prepare background",
+			fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r,
+			response.Error("Failed to prepare preview"))
+	}
+
+	tempDir := "output/" + params.Background
+	err = os.MkdirAll(tempDir, os.ModePerm)
+	if err != nil {
+		log.Error("Failed to create temp directory", fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r, response.Error("Failed to create temp directory"))
+		return
+	}
+
+	qrgen.Generation(params.List, params.Size, true, backgroundImg, "", params.HorizAlign, params.VertAlign, tempDir, false)
+	qrgen.Archive(tempDir, "site/"+params.Background+".zip")
+
+	buf, err := os.ReadFile("site/" + params.Background + ".zip")
+	if err != nil {
+		log.Error(
+			"Failed to read archive",
+			fmt.Errorf("%s: %w", op, err))
+		render.JSON(w, r,
+			response.Error("Failed to get archive"))
+	}
+	w.Write(buf)
+	os.RemoveAll(tempDir)
+	os.Remove("site/" + params.Background + ".zip")
 }
 
-func responseOK(w http.ResponseWriter, r *http.Request, msg string) {
+func responseOK(
+	w http.ResponseWriter,
+	r *http.Request,
+	body string) {
 	render.JSON(w, r, Response{
 		Response: response.OK(),
-		Message:  msg,
+		Body:     body,
 	})
 }

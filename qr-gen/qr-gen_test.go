@@ -48,7 +48,7 @@ func TestGenerationQR(t *testing.T) {
 		assert.Equal(t, sum2, sum1)
 	}
 
-	// os.RemoveAll("../tests/output/")
+	os.RemoveAll("../tests/output/")
 }
 
 func getMD5SumString(f *os.File) (string, error) {
