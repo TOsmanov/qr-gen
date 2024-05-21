@@ -141,7 +141,7 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 ) {
 	const op = "handlers.OrderHandler.Generation"
 	slog.Info(op)
-	log.Debug("params", r)
+
 	var params QRParams
 	b, err := io.ReadAll(r.Body)
 	if err != nil {

@@ -1,4 +1,6 @@
-Batch QR Code Generator
+# Batch QR Code Generator
+
+[![Tests](https://github.com/TOsmanov/qr-gen/actions/workflows/tests.yml/badge.svg)](https://github.com/TOsmanov/qr-gen/actions/workflows/tests.yml)
 
 This application places a QR code on the background image, the data for QR codes is taken from a text file. The output will be a folder with the finished images in jpg format. 
 Each image will contain a qr code with an encrypted string from the data file.
