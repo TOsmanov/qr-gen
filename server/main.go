@@ -11,7 +11,7 @@ import (
 	"github.com/TOsmanov/qr-gen/internal/http-server/handlers"
 	mwLogger "github.com/TOsmanov/qr-gen/internal/http-server/middleware/logger"
 	"github.com/TOsmanov/qr-gen/internal/lib/logger/sl"
-	"github.com/go-chi/chi/v5"
+	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
