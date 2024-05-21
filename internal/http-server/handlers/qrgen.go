@@ -19,8 +19,8 @@ type QRParams struct {
 	List       []string `json:"list,omitempty"`
 	Size       int      `json:"size"`
 	Background string   `json:"background"`
-	HorizAlign int      `json:"h-align"`
-	VertAlign  int      `json:"v-align"`
+	HorizAlign int      `json:"hAlign"`
+	VertAlign  int      `json:"vAlign"`
 }
 
 func Index(log *slog.Logger, w http.ResponseWriter,
