@@ -23,7 +23,9 @@ type QRParams struct {
 	VertAlign  int      `json:"vAlign"`
 }
 
-func Index(log *slog.Logger, w http.ResponseWriter) {
+func Index(log *slog.Logger, w http.ResponseWriter,
+	_ *http.Request,
+) {
 	tpl := template.Must(template.ParseFiles("site/index.html"))
 	tpl.Execute(w, nil)
 	log.Info("The main page has been sent successfully")
@@ -37,7 +39,7 @@ func GetPreview(log *slog.Logger, w http.ResponseWriter,
 	if err != nil {
 		log.Error(
 			"Failed to prepare background",
-			fmt.Errorf("%s: %w", op, err))
+			op, err)
 		render.JSON(w, r,
 			response.Error("Failed to get preview"))
 	}
@@ -52,7 +54,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	r.ParseMultipartForm(32 << 20) // 32 MB
 	file, _, err := r.FormFile("img")
 	if err != nil {
-		log.Error("Failed to read image from request", fmt.Errorf("%s: %w", op, err))
+		log.Error("Failed to read image from request", op, err)
 		render.JSON(w, r, response.Error("Failed to read image from request"))
 		return
 	}
@@ -61,7 +63,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	var data []byte
 	data, err = io.ReadAll(file)
 	if err != nil {
-		log.Error("Failed to read data", fmt.Errorf("%s: %w", op, err))
+		log.Error("Failed to read data", op, err)
 		render.JSON(w, r, response.Error("Failed to read data"))
 		return
 	}
@@ -71,7 +73,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	outputJpg := fmt.Sprintf("%s%s.jpg", tempDir, sum)
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
-		log.Error("Failed to create temp directory", fmt.Errorf("%s: %w", op, err))
+		log.Error("Failed to create temp directory", op, err)
 		render.JSON(w, r, response.Error("Failed to create temp directory"))
 		return
 	}
@@ -80,14 +82,14 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 		var tempFile *os.File
 		tempFile, err = os.Create(outputJpg)
 		if err != nil {
-			log.Error("Failed to create temp file", fmt.Errorf("%s: %w", op, err))
+			log.Error("Failed to create temp file", op, err)
 			render.JSON(w, r, response.Error("Failed to create temp file"))
 			return
 		}
 		defer tempFile.Close()
 		_, err = tempFile.Write(data)
 		if err != nil {
-			log.Error("Failed to write temp file", fmt.Errorf("%s: %w", op, err))
+			log.Error("Failed to write temp file", op, err)
 			render.JSON(w, r, response.Error("Failed to read image from request"))
 			return
 		}
@@ -103,7 +105,7 @@ func PostPreview(log *slog.Logger, w http.ResponseWriter,
 	var params QRParams
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Error("Failed to read request", fmt.Errorf("%s: %w", op, err))
+		log.Error("Failed to read request", op, err)
 		render.JSON(w, r, response.Error("Failed to read request"))
 	}
 	defer r.Body.Close()
@@ -114,7 +116,7 @@ func PostPreview(log *slog.Logger, w http.ResponseWriter,
 	if err != nil {
 		log.Error(
 			"Failed to prepare background",
-			fmt.Errorf("%s: %w", op, err))
+			op, err)
 		render.JSON(w, r,
 			response.Error("Failed to prepare preview"))
 	}
@@ -126,7 +128,7 @@ func PostPreview(log *slog.Logger, w http.ResponseWriter,
 	if err != nil {
 		log.Error(
 			"Failed to prepare background",
-			fmt.Errorf("%s: %w", op, err))
+			op, err)
 		render.JSON(w, r,
 			response.Error("Failed to prepare preview"))
 	}
@@ -146,7 +148,7 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	var params QRParams
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Error("Failed to read request", fmt.Errorf("%s: %w", op, err))
+		log.Error("Failed to read request", op, err)
 		render.JSON(w, r, response.Error("Failed to read request"))
 	}
 	defer r.Body.Close()
@@ -156,7 +158,7 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	if err != nil {
 		log.Error(
 			"Failed to prepare background",
-			fmt.Errorf("%s: %w", op, err))
+			op, err)
 		render.JSON(w, r,
 			response.Error("Failed to prepare preview"))
 	}
@@ -166,7 +168,7 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	tempDir := "output/" + params.Background
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
-		log.Error("Failed to create temp directory", fmt.Errorf("%s: %w", op, err))
+		log.Error("Failed to create temp directory", op, err)
 		render.JSON(w, r, response.Error("Failed to create temp directory"))
 		return
 	}
@@ -180,7 +182,7 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	if err != nil {
 		log.Error(
 			"Failed to read archive",
-			fmt.Errorf("%s: %w", op, err))
+			op, err)
 		render.JSON(w, r,
 			response.Error("Failed to get archive"))
 	}

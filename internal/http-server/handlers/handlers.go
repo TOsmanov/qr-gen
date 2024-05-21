@@ -18,7 +18,7 @@ func IndexHandler(log *slog.Logger) http.HandlerFunc {
 		log = log.With(
 			slog.String("op", op),
 		)
-		Index(log, w)
+		Index(log, w, r)
 	}
 }
 
