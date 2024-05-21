@@ -51,7 +51,8 @@ func Generation(list []string,
 		} else {
 			filename = data
 		}
-		out, err := os.Create(fmt.Sprintf("%s/%s.jpg", output, filename))
+		var out *os.File
+		out, err = os.Create(fmt.Sprintf("%s/%s.jpg", output, filename))
 		if err != nil {
 			return err
 		}

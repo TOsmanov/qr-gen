@@ -8,13 +8,13 @@ import (
 )
 
 func Archive(inputFolder string, outputPath string) error {
-	file, err := os.Create(outputPath)
+	archive, err := os.Create(outputPath)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer archive.Close()
 
-	w := zip.NewWriter(file)
+	w := zip.NewWriter(archive)
 	defer w.Close()
 
 	walker := func(path string, info os.FileInfo, err error) error {
@@ -24,7 +24,8 @@ func Archive(inputFolder string, outputPath string) error {
 		if info.IsDir() {
 			return nil
 		}
-		file, err := os.Open(path)
+		var file *os.File
+		file, err = os.Open(path)
 		if err != nil {
 			return err
 		}

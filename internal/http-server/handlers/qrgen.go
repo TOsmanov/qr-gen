@@ -76,8 +76,9 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 
-	if _, err := os.Stat(outputJpg); errors.Is(err, os.ErrNotExist) {
-		tempFile, err := os.Create(outputJpg)
+	if _, err = os.Stat(outputJpg); errors.Is(err, os.ErrNotExist) {
+		var tempFile *os.File
+		tempFile, err = os.Create(outputJpg)
 		if err != nil {
 			log.Error("Failed to create temp file", fmt.Errorf("%s: %w", op, err))
 			render.JSON(w, r, response.Error("Failed to create temp file"))

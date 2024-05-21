@@ -14,6 +14,7 @@ func TestGenerationQR(t *testing.T) {
 	os.RemoveAll("../tests/output/")
 	list, err := PrepareData("../tests/data.txt")
 	assert.Nil(t, err)
+
 	backgroundImg, err := PrepareBackground("../tests/background.jpg")
 	assert.Nil(t, err)
 
@@ -25,24 +26,33 @@ func TestGenerationQR(t *testing.T) {
 	// Comparing the number of files in a folder
 	output, err := os.ReadDir("../tests/output/")
 	assert.Nil(t, err)
+
 	expectOutput, err := os.ReadDir("../tests/output/")
 	assert.Nil(t, err)
 	assert.Equal(t, len(output), len(expectOutput))
 
-	// MD5 sum comparison
+	// Comparing sums
 	for _, file := range list {
 		// Output
-		f1, err := os.Open("../tests/output/" + file + ".jpg")
+		var f1 *os.File
+		f1, err = os.Open("../tests/output/" + file + ".jpg")
 		assert.Nil(t, err)
+
 		f1.Seek(0, 0)
-		sum1, err := fileSumSha256(f1)
+		var sum1 string
+		sum1, err = fileSumSha256(f1)
 		assert.Nil(t, err)
+
 		// Expected output
-		f2, err := os.Open("../tests/expect-output/" + file + ".jpg")
+		var f2 *os.File
+		f2, err = os.Open("../tests/expect-output/" + file + ".jpg")
 		assert.Nil(t, err)
+
 		f2.Seek(0, 0)
-		sum2, err := fileSumSha256(f2)
+		var sum2 string
+		sum2, err = fileSumSha256(f2)
 		assert.Nil(t, err)
+
 		// Compare
 		assert.Equal(t, sum2, sum1)
 	}
