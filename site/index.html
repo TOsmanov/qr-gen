@@ -23,8 +23,8 @@
                         body: JSON.stringify({
                             'size': Number(document.querySelector('input[type="size"]').value),
                             'background': String(imgHash),
-                            'h-align': Number(document.querySelector('input[type="h-align"]').value),
-                            'v-align': Number(document.querySelector('input[type="v-align"]').value)
+                            'hAlign': Number(document.querySelector('input[type="h-align"]').value),
+                            'vAlign': Number(document.querySelector('input[type="v-align"]').value)
                         })
                     })
                     await resp;
@@ -53,8 +53,8 @@
                             'list': String(document.querySelector('textarea').value).split('\n'),
                             'size': Number(document.querySelector('input[type="size"]').value),
                             'background': String(imgHash),
-                            'h-align': Number(document.querySelector('input[type="h-align"]').value),
-                            'v-align': Number(document.querySelector('input[type="v-align"]').value)
+                            'hAlign': Number(document.querySelector('input[type="h-align"]').value),
+                            'vAlign': Number(document.querySelector('input[type="v-align"]').value)
                         })
                     })
                         .then(resp => resp.blob())
@@ -68,48 +68,11 @@
                             link.download = `qrgen_archive_${dd}_${mm}_${yyyy}.zip`;
                             link.click();
                         }).catch(error => console.error('Error downloading file:', error));
-                    // await resp;
-                    // response.blob()
-           
-                    // downloadFileFromURL(resp.data, `qrgen_archive_${dd}_${mm}_${yyyy}.zip`);
-                    // if (resp.status !== 200) {
-                    //     throw new Error(respData.message);
-                    // }
                 }
             } else {
                 alert("Заполните обязательные поля формы")
             }
         }
-        // function downloadFileFromURL(url, fileName) {
-        //     fetch(url)
-        //         .then(response => response.blob())
-        //         .then(blob => {
-        //         const link = document.createElement('a');
-        //         link.href = URL.createObjectURL(blob);
-        //         link.download = fileName;
-        //         link.click();
-        //         })
-        //         .catch(error => console.error('Error downloading file:', error));
-        // }
-        // async function Generation() {
-        //     if (document.querySelector('input[type="file"]').files.length > 0) {
-        //         imgHash = await uploadData()
-        //         if (imgHash.length > 0 ) {
-        //             await postData('/generation', 
-        //                 {
-        //                     'list': document.querySelector('textarea').value,
-        //                     'size': document.querySelector('input[type="size"]').value,
-        //                     'background': String(imgHash),
-        //                     'h-align': document.querySelector('input[type="h-align"]').value,
-        //                     'v-align': document.querySelector('input[type="v-align"]').value
-        //             })
-        //                 .then(data => console.log(data))
-        //                 .catch(error => console.error('Ошибка:', error))
-        //         }
-        //     } else {
-        //         alert("Необходимо выбрать фоновое изображение")
-        //     }
-        // }
 
         async function uploadData() {
             const imageFile = document.querySelector('input[type="file"]').files[0]

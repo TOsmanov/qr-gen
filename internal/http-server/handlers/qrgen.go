@@ -26,7 +26,7 @@ type QRParams struct {
 func Index(log *slog.Logger, w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var tpl = template.Must(template.ParseFiles("site/index.html"))
+	tpl := template.Must(template.ParseFiles("site/index.html"))
 	tpl.Execute(w, nil)
 }
 
@@ -187,7 +187,8 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 func responseOK(
 	w http.ResponseWriter,
 	r *http.Request,
-	body string) {
+	body string,
+) {
 	render.JSON(w, r, Response{
 		Response: response.OK(),
 		Body:     body,

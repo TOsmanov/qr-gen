@@ -15,14 +15,16 @@ func TestPrepairData(t *testing.T) {
 	assert.NotNil(t, err)
 	list, err = PrepareData("../tests/data.txt")
 	assert.Nil(t, err)
-	expected := []string{"12300534643",
+	expected := []string{
+		"12300534643",
 		"4735786789",
 		"FHKR759Skl6378993",
 		"BRGJHMOW525",
 		"QWE12GU",
 		"QWE12",
 		"QWE",
-		"QW"}
+		"QW",
+	}
 	assert.Equal(t, list, expected)
 }
 

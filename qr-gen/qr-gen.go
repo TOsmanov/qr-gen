@@ -15,7 +15,8 @@ import (
 
 func Generation(list []string,
 	size int, qr bool, backgroundImg image.Image, font string,
-	horizontalAlign int, verticalAlign int, output string, preview bool) error {
+	horizontalAlign int, verticalAlign int, output string, preview bool,
+) error {
 	hAlign := float64(horizontalAlign) / 100
 	vAlign := float64(verticalAlign) / 100
 	var err error
@@ -45,7 +46,7 @@ func Generation(list []string,
 		rgba := image.NewRGBA(r)
 		draw.Draw(rgba, backgroundImg.Bounds(), backgroundImg, image.Point{0, 0}, draw.Src)
 		draw.Draw(rgba, backgroundImg.Bounds(), upperImg, point, draw.Src)
-		os.Mkdir(output, 0750)
+		os.Mkdir(output, 0o750)
 		if preview {
 			filename = "preview"
 		} else {
