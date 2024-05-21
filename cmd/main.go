@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"os"
 
 	qrgen "github.com/TOsmanov/qr-gen/qr-gen"
 )
@@ -56,7 +55,6 @@ func main() {
 	list, err := qrgen.PrepareData(data)
 	if err != nil {
 		log.Fatalf("Error in data preparation: %v", err)
-		os.Exit(1)
 	}
 
 	err = qrgen.Generation(list, size, qr, backgroundImg, font, horizontalAlign, verticalAlign, output, false)

@@ -1,8 +1,7 @@
 package qrgen
 
 import (
-	"crypto/md5"
-	"encoding/hex"
+	"crypto/sha256"
 	"fmt"
 	"image"
 	"image/draw"
@@ -87,9 +86,9 @@ func prepareText(size int, font string, data string) image.Image {
 	return dc.Image()
 }
 
-func GetMD5TempFile(data []byte) string {
-	hash := md5.Sum(data)
-	return hex.EncodeToString(hash[:])
+func SumSha256(data []byte) string {
+	hash := sha256.Sum256(data)
+	return fmt.Sprintf("%x", hash)
 }
 
 // TODO Clean Temp files

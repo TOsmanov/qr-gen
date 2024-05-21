@@ -1,7 +1,7 @@
 package qrgen
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"os"
@@ -36,13 +36,13 @@ func TestGenerationQR(t *testing.T) {
 		f1, err := os.Open("../tests/output/" + file + ".jpg")
 		assert.Nil(t, err)
 		f1.Seek(0, 0)
-		sum1, err := getMD5SumString(f1)
+		sum1, err := fileSumSha256(f1)
 		assert.Nil(t, err)
 		// Expected output
 		f2, err := os.Open("../tests/expect-output/" + file + ".jpg")
 		assert.Nil(t, err)
 		f2.Seek(0, 0)
-		sum2, err := getMD5SumString(f2)
+		sum2, err := fileSumSha256(f2)
 		assert.Nil(t, err)
 		// Compare
 		assert.Equal(t, sum2, sum1)
@@ -51,8 +51,8 @@ func TestGenerationQR(t *testing.T) {
 	os.RemoveAll("../tests/output/")
 }
 
-func getMD5SumString(f *os.File) (string, error) {
-	file1Sum := md5.New()
+func fileSumSha256(f *os.File) (string, error) {
+	file1Sum := sha256.New()
 	_, err := io.Copy(file1Sum, f)
 	if err != nil {
 		return "", err

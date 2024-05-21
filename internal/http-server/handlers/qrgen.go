@@ -23,11 +23,10 @@ type QRParams struct {
 	VertAlign  int      `json:"vAlign"`
 }
 
-func Index(log *slog.Logger, w http.ResponseWriter,
-	r *http.Request,
-) {
+func Index(log *slog.Logger, w http.ResponseWriter) {
 	tpl := template.Must(template.ParseFiles("site/index.html"))
 	tpl.Execute(w, nil)
+	log.Info("The main page has been sent successfully")
 }
 
 func GetPreview(log *slog.Logger, w http.ResponseWriter,
@@ -67,8 +66,9 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 
-	sum := qrgen.GetMD5TempFile(data)
-	tempDir := "./temp/"
+	sum := qrgen.SumSha256(data)
+	const tempDir = "./temp/"
+	outputJpg := fmt.Sprintf("%s%s.jpg", tempDir, sum)
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
 		log.Error("Failed to create temp directory", fmt.Errorf("%s: %w", op, err))
@@ -76,8 +76,8 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 
-	if _, err := os.Stat(tempDir + sum + ".jpg"); errors.Is(err, os.ErrNotExist) {
-		tempFile, err := os.Create(tempDir + sum + ".jpg")
+	if _, err := os.Stat(outputJpg); errors.Is(err, os.ErrNotExist) {
+		tempFile, err := os.Create(outputJpg)
 		if err != nil {
 			log.Error("Failed to create temp file", fmt.Errorf("%s: %w", op, err))
 			render.JSON(w, r, response.Error("Failed to create temp file"))
@@ -160,6 +160,8 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 			response.Error("Failed to prepare preview"))
 	}
 
+	outputZip := fmt.Sprintf("site/%s.zip", params.Background)
+
 	tempDir := "output/" + params.Background
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
@@ -168,10 +170,12 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 
-	qrgen.Generation(params.List, params.Size, true, backgroundImg, "", params.HorizAlign, params.VertAlign, tempDir, false)
-	qrgen.Archive(tempDir, "site/"+params.Background+".zip")
+	qrgen.Generation(
+		params.List, params.Size, true, backgroundImg,
+		"", params.HorizAlign, params.VertAlign, tempDir, false)
+	qrgen.Archive(tempDir, outputZip)
 
-	buf, err := os.ReadFile("site/" + params.Background + ".zip")
+	buf, err := os.ReadFile(outputZip)
 	if err != nil {
 		log.Error(
 			"Failed to read archive",
@@ -181,7 +185,7 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	}
 	w.Write(buf)
 	os.RemoveAll(tempDir)
-	os.Remove("site/" + params.Background + ".zip")
+	os.Remove(outputZip)
 }
 
 func responseOK(
