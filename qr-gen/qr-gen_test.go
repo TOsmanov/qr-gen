@@ -13,7 +13,6 @@ import (
 func TestGenerationQR(t *testing.T) {
 	os.RemoveAll("../tests/output/")
 	list, err := PrepareData("../tests/data.txt")
-	fmt.Println(list)
 	assert.Nil(t, err)
 	backgroundImg, err := PrepareBackground("../tests/background.jpg")
 	assert.Nil(t, err)
