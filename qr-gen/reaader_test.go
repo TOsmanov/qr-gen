@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPrepairData(t *testing.T) {
+func TestPrepareData(t *testing.T) {
 	var list []string
 	var err error
 	_, err = PrepareData("bad/path.txt")

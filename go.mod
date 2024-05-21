@@ -1,6 +1,6 @@
 module github.com/TOsmanov/qr-gen
 
-go 1.21.5
+go 1.21
 
 require (
 	github.com/fogleman/gg v1.3.0
