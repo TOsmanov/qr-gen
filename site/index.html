@@ -3,20 +3,17 @@
 <html lang="en" class="notranslate" translate="no" data-theme="dark">
 <head>
     <script>
-        async function postData(url = '', data = {}) {
-            const response = await fetch(url, {
-                method: 'POST',
-                // headers: {
-                //     'Content-Type': 'application/x-www-form-urlencoded'
-                // },
-                body: new URLSearchParams(data).toString()
-            });
-            return response.json();
-        }
+        // async function postData(url = '', data = {}) {
+        //     const response = await fetch(url, {
+        //         method: 'POST',
+        //         body: new URLSearchParams(data).toString()
+        //     });
+        //     return response.json();
+        // }
         async function Preview() {
             if (document.querySelector('input[type="file"]').files.length > 0) {
                 imgHash = await uploadData()
-                if (imgHash) {
+                if (imgHash && typeof imgHash !== "error") {
                     const resp = await fetch('/preview', {
                         method: 'POST',
                         contentType: "application/json",
@@ -39,13 +36,13 @@
                     }
                 }
             } else {
-                alert("Необходимо выбрать фоновое изображение")
+                alert("Заполните обязательные поля формы и выберите фоновое изображение")
             }
         }
         async function Generation() {
             if (document.querySelector('input[type="file"]').files.length > 0 && document.querySelector('textarea').value) {
                 imgHash = await uploadData()
-                if (imgHash) {
+                if (imgHash && typeof imgHash !== "error") {
                     await fetch('/generation', {
                         method: 'POST',
                         contentType: "application/json",
@@ -70,7 +67,7 @@
                         }).catch(error => console.error('Error downloading file:', error));
                 }
             } else {
-                alert("Заполните обязательные поля формы")
+                alert("Заполните обязательные поля формы и выберите фоновое изображение")
             }
         }
 
@@ -80,16 +77,12 @@
             formdata.append('img', imageFile);
             const resp = await fetch('/background', {
                 method: 'POST',
-                // credentials: 'include',
-                // headers: {
-                //     Accept: 'application/json'
-                // },
                 body: formdata
             })
             respData =  await resp.json();
             if (resp.status !== 200) {
-                alert("Необходимо выбрать фоновое изображение")
-                throw new Error(respData.message);
+                console.log(respData.message)
+                return new Error(respData.message);
             }
             return respData.data;
         }
@@ -153,15 +146,8 @@
             <form method="put" enctype="multipart/form-data">
                 <fieldset>
                     <legend>Параметры расположения</legend>
-                    <!-- <label for='uploadFile'></label>
-                        <b>Фоновое изображение: </b>
-                        <form action="/background" method="post" enctype="multipart/form-data">
-                            <input type="file" name="image" />
-                        </form>
-                    </label> -->
                     <label for='uploadFile'>
-                        <b>Фоновое изображение*</b><input type='file' name='image'/>
-                        <!-- <button id='background' style="display: none;" type="submit"></button> -->
+                        <b>Фоновое изображение*</b><input type='file' accept=".jpg,.jpeg,.png" name='image'/>
                     </label>
                     <label>
                         <b>Размер QR-кода в пикселях</b>
