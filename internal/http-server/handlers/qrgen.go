@@ -77,7 +77,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 
 	// Format validation
 
-	var formats = []string{"image/jpg", "image/jpeg", "image/png"}
+	formats := []string{"image/jpg", "image/jpeg", "image/png"}
 	s := http.DetectContentType(data)
 
 	if !existInSlice(s, formats) {
