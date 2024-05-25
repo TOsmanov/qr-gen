@@ -56,13 +56,12 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	r *http.Request, cfg *config.Config,
 ) {
 	const op = "handlers.OrderHandler.UploadBackground"
-	const failMsg = "Error uploading the file"
 	r.ParseMultipartForm(32 << 20) // 32 MB
 	file, _, err := r.FormFile("img")
 	if err != nil {
 		w.WriteHeader(400)
 		log.Error("Failed to read image from request", op, err)
-		responseFail(w, r, failMsg)
+		responseFail(w, r, "Failed to read image from request")
 		return
 	}
 	defer file.Close()
@@ -72,7 +71,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	if err != nil {
 		w.WriteHeader(500)
 		log.Error("Failed to read data", op, err)
-		responseFail(w, r, failMsg)
+		responseFail(w, r, "Failed to read data")
 		return
 	}
 
@@ -84,7 +83,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	if !existInSlice(s, formats) {
 		w.WriteHeader(400)
 		log.Error("Failed to validation file type", op, err)
-		responseFail(w, r, failMsg)
+		responseFail(w, r, "Failed to validation file type")
 		return
 	}
 
@@ -96,7 +95,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	if err != nil {
 		w.WriteHeader(500)
 		log.Error("Failed to create temp directory", op, err)
-		responseFail(w, r, failMsg)
+		responseFail(w, r, "Failed to create temp directory")
 		return
 	}
 
@@ -108,7 +107,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 		if err != nil {
 			w.WriteHeader(500)
 			log.Error("Failed to create temp file", op, err)
-			responseFail(w, r, failMsg)
+			responseFail(w, r, "Failed to create temp file")
 			return
 		}
 		defer tempFile.Close()
@@ -116,7 +115,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 		if err != nil {
 			w.WriteHeader(500)
 			log.Error("Failed to write temp file", op, err)
-			responseFail(w, r, failMsg)
+			responseFail(w, r, "Failed to write temp file")
 			return
 		}
 	}
