@@ -7,6 +7,7 @@ import (
 	"image/draw"
 	"image/jpeg"
 	"os"
+	"regexp"
 
 	"github.com/fogleman/gg"
 	"github.com/skip2/go-qrcode"
@@ -49,7 +50,8 @@ func Generation(list []string,
 		if preview {
 			filename = "preview"
 		} else {
-			filename = data
+			regex := regexp.MustCompile(`[htps]*://|/|\\|\s`)
+			filename = regex.ReplaceAllString(data, "")
 		}
 		var out *os.File
 		out, err = os.Create(fmt.Sprintf("%s/%s.jpg", output, filename))
