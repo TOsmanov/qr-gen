@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/TOsmanov/qr-gen/internal/config"
 	"github.com/TOsmanov/qr-gen/internal/lib/api/response"
 	qrgen "github.com/TOsmanov/qr-gen/qr-gen"
 	"github.com/go-chi/render"
@@ -24,18 +25,18 @@ type QRParams struct {
 }
 
 func Index(log *slog.Logger, w http.ResponseWriter,
-	_ *http.Request,
+	_ *http.Request, cfg *config.Config,
 ) {
-	tpl := template.Must(template.ParseFiles("site/index.html"))
+	tpl := template.Must(template.ParseFiles(cfg.MainPage))
 	tpl.Execute(w, nil)
 	log.Info("The main page has been sent successfully")
 }
 
 func GetPreview(log *slog.Logger, w http.ResponseWriter,
-	r *http.Request,
+	r *http.Request, cfg *config.Config,
 ) {
 	const op = "handlers.OrderHandler.GetPreview"
-	buf, err := os.ReadFile("site/preview.jpg")
+	buf, err := os.ReadFile(cfg.PreviewPath)
 	if err != nil {
 		w.WriteHeader(400)
 		log.Error(
@@ -46,22 +47,22 @@ func GetPreview(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 
-	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Type", "image/jpg")
 	w.Write(buf)
-	os.Remove("site/preview.jpg")
+	os.Remove(cfg.PreviewPath)
 }
 
 func UploadBackground(log *slog.Logger, w http.ResponseWriter,
-	r *http.Request,
+	r *http.Request, cfg *config.Config,
 ) {
 	const op = "handlers.OrderHandler.UploadBackground"
-	const errorMsg = "Error uploading the file"
+	const failMsg = "Error uploading the file"
 	r.ParseMultipartForm(32 << 20) // 32 MB
 	file, _, err := r.FormFile("img")
 	if err != nil {
 		w.WriteHeader(400)
 		log.Error("Failed to read image from request", op, err)
-		responseFail(w, r, errorMsg)
+		responseFail(w, r, failMsg)
 		return
 	}
 	defer file.Close()
@@ -71,31 +72,35 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	if err != nil {
 		w.WriteHeader(500)
 		log.Error("Failed to read data", op, err)
-		responseFail(w, r, errorMsg)
+		responseFail(w, r, failMsg)
 		return
 	}
 
+	// Format validation
+
 	var formats = []string{"image/jpg", "image/jpeg", "image/png"}
 	s := http.DetectContentType(data)
-	log.Info("s", s, existInSlice(s, formats))
 
 	if !existInSlice(s, formats) {
 		w.WriteHeader(400)
 		log.Error("Failed to validation file type", op, err)
-		responseFail(w, r, errorMsg)
+		responseFail(w, r, failMsg)
 		return
 	}
 
+	// Prepare temp file
+
 	sum := qrgen.SumSha256(data)
-	const tempDir = "./temp/"
-	outputJpg := fmt.Sprintf("%s%s.jpg", tempDir, sum)
-	err = os.MkdirAll(tempDir, os.ModePerm)
+	outputJpg := fmt.Sprintf("%s/%s.jpg", cfg.TempDir, sum)
+	err = os.MkdirAll(cfg.TempDir, os.ModePerm)
 	if err != nil {
 		w.WriteHeader(500)
 		log.Error("Failed to create temp directory", op, err)
-		responseFail(w, r, errorMsg)
+		responseFail(w, r, failMsg)
 		return
 	}
+
+	// Write background file (if not exist)
 
 	if _, err = os.Stat(outputJpg); errors.Is(err, os.ErrNotExist) {
 		var tempFile *os.File
@@ -103,7 +108,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 		if err != nil {
 			w.WriteHeader(500)
 			log.Error("Failed to create temp file", op, err)
-			responseFail(w, r, errorMsg)
+			responseFail(w, r, failMsg)
 			return
 		}
 		defer tempFile.Close()
@@ -111,7 +116,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 		if err != nil {
 			w.WriteHeader(500)
 			log.Error("Failed to write temp file", op, err)
-			responseFail(w, r, errorMsg)
+			responseFail(w, r, failMsg)
 			return
 		}
 	}
@@ -120,7 +125,7 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 }
 
 func PostPreview(log *slog.Logger, w http.ResponseWriter,
-	r *http.Request,
+	r *http.Request, cfg *config.Config,
 ) {
 	const op = "handlers.OrderHandler.PostPreview"
 	var params QRParams
@@ -135,7 +140,7 @@ func PostPreview(log *slog.Logger, w http.ResponseWriter,
 
 	json.Unmarshal(b, &params)
 
-	backgroundImg, err := qrgen.PrepareBackground("./temp/" + params.Background + ".jpg")
+	backgroundImg, err := qrgen.PrepareBackground(fmt.Sprintf("%s/%s.jpg", cfg.TempDir, params.Background))
 	if err != nil {
 		w.WriteHeader(500)
 		log.Error(
@@ -148,26 +153,12 @@ func PostPreview(log *slog.Logger, w http.ResponseWriter,
 
 	var list []string
 
-	qrgen.Generation(list, params.Size, true, backgroundImg, "", params.HorizAlign, params.VertAlign, "site", true)
-	buf, err := os.ReadFile("temp/preview/preview.jpg")
-	if err != nil {
-		w.WriteHeader(400)
-		log.Error(
-			"Failed to read preview",
-			op, err)
-		render.JSON(w, r,
-			response.Error("Failed to prepare preview"))
-		return
-	}
-	w.Header().Set("Content-Type", "image/png")
-	w.Write(buf)
+	qrgen.Generation(list, params.Size, true, backgroundImg, "", params.HorizAlign, params.VertAlign, cfg.SiteDir, true)
 	responseOK(w, r, "The preview has been successfully generate")
-
-	// TODO: Clean()
 }
 
 func GenerationQR(log *slog.Logger, w http.ResponseWriter,
-	r *http.Request,
+	r *http.Request, cfg *config.Config,
 ) {
 	const op = "handlers.OrderHandler.Generation"
 	slog.Info(op)
@@ -183,7 +174,7 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	defer r.Body.Close()
 
 	json.Unmarshal(b, &params)
-	backgroundImg, err := qrgen.PrepareBackground("./temp/" + params.Background + ".jpg")
+	backgroundImg, err := qrgen.PrepareBackground(fmt.Sprintf("%s/%s.jpg", cfg.TempDir, params.Background))
 	if err != nil {
 		w.WriteHeader(400)
 		log.Error(
@@ -194,9 +185,9 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 
-	outputZip := fmt.Sprintf("site/%s.zip", params.Background)
+	outputZip := fmt.Sprintf("%s/%s.zip", cfg.SiteDir, params.Background)
 
-	tempDir := "output/" + params.Background
+	tempDir := fmt.Sprintf("%s/%s", cfg.TempDir, params.Background)
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
 		w.WriteHeader(500)

@@ -1,7 +1,9 @@
 enviroment: "docker"
 
 qrGen:
-    outputFolder: "output"
+    outputDir: "output"
+    siteDir: "site"
+    tempDir: "temp"
 
 httpServer:
     address: "qr-gen:10001"

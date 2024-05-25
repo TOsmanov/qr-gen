@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -21,7 +22,11 @@ type HTTPServer struct {
 	ShutdownTimeout time.Duration `yaml:"shutdownTimeout" env-default:"10s"`
 }
 type QRGen struct {
-	OutputFolder string `yaml:"outputFolder" env-default:"output"`
+	OutputDir   string `yaml:"outputDir" env-default:"output"`
+	TempDir     string `yaml:"tempDir" env-default:"temp"`
+	SiteDir     string `yaml:"siteDir" env-default:"site"`
+	PreviewPath string
+	MainPage    string
 }
 
 func MustLoad() *Config {
@@ -34,6 +39,8 @@ func MustLoad() *Config {
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		log.Fatalf("Cannot read config: %s", err)
 	}
+	cfg.PreviewPath = fmt.Sprintf("%s/preview.jpg", cfg.SiteDir)
+	cfg.MainPage = fmt.Sprintf("%s/index.html", cfg.SiteDir)
 
 	return &cfg
 }

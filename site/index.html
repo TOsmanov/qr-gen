@@ -1,19 +1,11 @@
 <!DOCTYPE html>
-<!-- -file ./tests/data.txt -background ./tests/background.jpg -size 120 -h-align 50 -v-align 75 -output output -->
 <html lang="en" class="notranslate" translate="no" data-theme="dark">
 <head>
     <script>
-        // async function postData(url = '', data = {}) {
-        //     const response = await fetch(url, {
-        //         method: 'POST',
-        //         body: new URLSearchParams(data).toString()
-        //     });
-        //     return response.json();
-        // }
         async function Preview() {
             if (document.querySelector('input[type="file"]').files.length > 0) {
                 imgHash = await uploadData()
-                if (imgHash && typeof imgHash !== "error") {
+                if (imgHash && typeof imgHash === "string") {
                     const resp = await fetch('/preview', {
                         method: 'POST',
                         contentType: "application/json",
@@ -34,6 +26,8 @@
                     if (resp.status !== 200) {
                         throw new Error(respData.message);
                     }
+                } else {
+                    alert("Не удалось загрузить фоновое изображение")
                 }
             } else {
                 alert("Заполните обязательные поля формы и выберите фоновое изображение")
@@ -42,7 +36,8 @@
         async function Generation() {
             if (document.querySelector('input[type="file"]').files.length > 0 && document.querySelector('textarea').value) {
                 imgHash = await uploadData()
-                if (imgHash && typeof imgHash !== "error") {
+                console.log("imgHash", typeof imgHash)
+                if (imgHash && typeof imgHash == "string") {
                     await fetch('/generation', {
                         method: 'POST',
                         contentType: "application/json",
@@ -65,6 +60,8 @@
                             link.download = `qrgen_archive_${dd}_${mm}_${yyyy}.zip`;
                             link.click();
                         }).catch(error => console.error('Error downloading file:', error));
+                } else {
+                    alert("Не удалось загрузить фоновое изображение")
                 }
             } else {
                 alert("Заполните обязательные поля формы и выберите фоновое изображение")

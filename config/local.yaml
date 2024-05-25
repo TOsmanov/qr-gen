@@ -1,7 +1,9 @@
 enviroment: "local"
 
 qrGen:
-    outputFolder: "output"
+    outputDir: "output"
+    siteDir: "site"
+    tempDir: "temp"
 
 httpServer:
     address: "localhost:10001"

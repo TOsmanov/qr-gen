@@ -30,10 +30,10 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.HandleFunc("/", handlers.IndexHandler(log))
-	router.HandleFunc("/background", handlers.BackgroundHandler(log))
-	router.HandleFunc("/preview", handlers.PreviewHandler(log))
-	router.HandleFunc("/generation", handlers.GenerationHandler(log))
+	router.HandleFunc("/", handlers.IndexHandler(log, cfg))
+	router.HandleFunc("/background", handlers.BackgroundHandler(log, cfg))
+	router.HandleFunc("/preview", handlers.PreviewHandler(log, cfg))
+	router.HandleFunc("/generation", handlers.GenerationHandler(log, cfg))
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -59,7 +59,7 @@ func main() {
 	<-done
 	log.Info("Stopping server")
 
-	Clean()
+	Clean(cfg)
 	log.Info("Server stopped")
 }
 
@@ -79,6 +79,8 @@ func setupLogger(env string) *slog.Logger {
 	return log
 }
 
-func Clean() {
-	// TODO: clean temp files and preview.jpg
+func Clean(cfg *config.Config) {
+	os.RemoveAll(cfg.TempDir)
+	os.RemoveAll(cfg.OutputDir)
+	os.Remove(cfg.PreviewPath)
 }
