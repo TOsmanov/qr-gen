@@ -17,6 +17,9 @@ func Generation(list []string,
 	size int, qr bool, backgroundImg image.Image, font string,
 	horizontalAlign int, verticalAlign int, output string, preview bool,
 ) error {
+	if !(size > 0) && !(horizontalAlign > 0) && !(verticalAlign > 0) {
+		return fmt.Errorf("numeric parameters must be greater than zero")
+	}
 	hAlign := float64(horizontalAlign) / 100
 	vAlign := float64(verticalAlign) / 100
 	var err error

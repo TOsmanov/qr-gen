@@ -76,7 +76,6 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	}
 
 	// Format validation
-
 	formats := []string{"image/jpg", "image/jpeg", "image/png"}
 	s := http.DetectContentType(data)
 
@@ -88,7 +87,6 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	}
 
 	// Prepare temp file
-
 	sum := qrgen.SumSha256(data)
 	outputJpg := fmt.Sprintf("%s/%s.jpg", cfg.TempDir, sum)
 	err = os.MkdirAll(cfg.TempDir, os.ModePerm)
@@ -100,7 +98,6 @@ func UploadBackground(log *slog.Logger, w http.ResponseWriter,
 	}
 
 	// Write background file (if not exist)
-
 	if _, err = os.Stat(outputJpg); errors.Is(err, os.ErrNotExist) {
 		var tempFile *os.File
 		tempFile, err = os.Create(outputJpg)
@@ -139,7 +136,8 @@ func PostPreview(log *slog.Logger, w http.ResponseWriter,
 
 	json.Unmarshal(b, &params)
 
-	backgroundImg, err := qrgen.PrepareBackground(fmt.Sprintf("%s/%s.jpg", cfg.TempDir, params.Background))
+	backgroundImg, err := qrgen.PrepareBackground(
+		fmt.Sprintf("%s/%s.jpg", cfg.TempDir, params.Background))
 	if err != nil {
 		w.WriteHeader(500)
 		log.Error(
@@ -152,7 +150,18 @@ func PostPreview(log *slog.Logger, w http.ResponseWriter,
 
 	var list []string
 
-	qrgen.Generation(list, params.Size, true, backgroundImg, "", params.HorizAlign, params.VertAlign, cfg.SiteDir, true)
+	err = qrgen.Generation(
+		list, params.Size, true, backgroundImg, "",
+		params.HorizAlign, params.VertAlign, cfg.SiteDir, true)
+	if err != nil {
+		w.WriteHeader(500)
+		log.Error(
+			"Failed to generate preview",
+			op, err)
+		render.JSON(w, r,
+			response.Error("Failed to generate preview"))
+		return
+	}
 	responseOK(w, r, "The preview has been successfully generate")
 }
 
@@ -160,9 +169,9 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	r *http.Request, cfg *config.Config,
 ) {
 	const op = "handlers.OrderHandler.Generation"
-	slog.Info(op)
-
 	var params QRParams
+
+	// Parameters
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(400)
@@ -173,7 +182,10 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 	defer r.Body.Close()
 
 	json.Unmarshal(b, &params)
-	backgroundImg, err := qrgen.PrepareBackground(fmt.Sprintf("%s/%s.jpg", cfg.TempDir, params.Background))
+
+	// Prepare background
+	backgroundImg, err := qrgen.PrepareBackground(
+		fmt.Sprintf("%s/%s.jpg", cfg.TempDir, params.Background))
 	if err != nil {
 		w.WriteHeader(400)
 		log.Error(
@@ -184,9 +196,9 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 
-	outputZip := fmt.Sprintf("%s/%s.zip", cfg.SiteDir, params.Background)
-
+	// Make temp directory
 	tempDir := fmt.Sprintf("%s/%s", cfg.TempDir, params.Background)
+
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
 		w.WriteHeader(500)
@@ -195,9 +207,22 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 
-	qrgen.Generation(
+	// Generate images
+	err = qrgen.Generation(
 		params.List, params.Size, true, backgroundImg,
 		"", params.HorizAlign, params.VertAlign, tempDir, false)
+	if err != nil {
+		w.WriteHeader(500)
+		log.Error(
+			"Failed to generation",
+			op, err)
+		render.JSON(w, r,
+			response.Error("Failed to generation"))
+		return
+	}
+
+	// Archiving
+	outputZip := fmt.Sprintf("%s/%s.zip", cfg.SiteDir, params.Background)
 	qrgen.Archive(tempDir, outputZip)
 
 	buf, err := os.ReadFile(outputZip)
@@ -211,6 +236,8 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 	w.Write(buf)
+
+	// Clean
 	os.RemoveAll(tempDir)
 	os.Remove(outputZip)
 }

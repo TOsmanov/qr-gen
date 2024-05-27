@@ -7,25 +7,30 @@
             if (document.querySelector('input[type="file"]').files.length > 0) {
                 imgHash = await uploadData()
                 if (imgHash && typeof imgHash === "string") {
-                    const resp = await fetch('/preview', {
-                        method: 'POST',
-                        contentType: "application/json",
-                        body: JSON.stringify({
-                            'size': Number(document.querySelector('input[type="size"]').value),
-                            'background': String(imgHash),
-                            'hAlign': Number(document.querySelector('input[type="h-align"]').value),
-                            'vAlign': Number(document.querySelector('input[type="v-align"]').value)
+                    valid = formValidator()
+                    if (typeof valid == null ) {
+                        const resp = await fetch('/preview', {
+                            method: 'POST',
+                            contentType: "application/json",
+                            body: JSON.stringify({
+                                'size': Number(document.querySelector('input[type="size"]').value),
+                                'background': String(imgHash),
+                                'hAlign': Number(document.querySelector('input[type="h-align"]').value),
+                                'vAlign': Number(document.querySelector('input[type="v-align"]').value)
+                            })
                         })
-                    })
-                    await resp;
+                        await resp;
 
-                    hiddenImg = new Image();
-                    hiddenImg.src = `/preview.jpg?${Date.now()}`;
+                        hiddenImg = new Image();
+                        hiddenImg.src = `/preview.jpg?${Date.now()}`;
 
-                    document.querySelector('img').src = hiddenImg.src
-                    document.querySelector('#preview > p').hidden = true
-                    if (resp.status !== 200) {
-                        throw new Error(respData.message);
+                        document.querySelector('img').src = hiddenImg.src
+                        document.querySelector('#preview > p').hidden = true
+                        if (resp.status !== 200) {
+                            throw new Error(respData.message);
+                        }
+                    } else {
+                        alert(`Неправильное заполнение формы:\n${msg}`)
                     }
                 } else {
                     alert("Не удалось загрузить фоновое изображение")
@@ -37,36 +42,61 @@
         async function Generation() {
             if (document.querySelector('input[type="file"]').files.length > 0 && document.querySelector('textarea').value) {
                 imgHash = await uploadData()
-                console.log("imgHash", typeof imgHash)
+                valid = formValidator()
                 if (imgHash && typeof imgHash == "string") {
-                    await fetch('/generation', {
-                        method: 'POST',
-                        contentType: "application/json",
-                        body: JSON.stringify({
-                            'list': String(document.querySelector('textarea').value).split('\n'),
-                            'size': Number(document.querySelector('input[type="size"]').value),
-                            'background': String(imgHash),
-                            'hAlign': Number(document.querySelector('input[type="h-align"]').value),
-                            'vAlign': Number(document.querySelector('input[type="v-align"]').value)
+                    valid = formValidator()
+                    if (valid) {
+                        await fetch('/generation', {
+                            method: 'POST',
+                            contentType: "application/json",
+                            body: JSON.stringify({
+                                'list': String(document.querySelector('textarea').value).split('\n'),
+                                'size': Number(document.querySelector('input[type="size"]').value),
+                                'background': String(imgHash),
+                                'hAlign': Number(document.querySelector('input[type="h-align"]').value),
+                                'vAlign': Number(document.querySelector('input[type="v-align"]').value)
+                            })
                         })
-                    })
-                        .then(resp => resp.blob())
-                        .then(blob => {
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            let today = new Date()
-                            let dd = today.getDate();
-                            let mm = today.getMonth();
-                            let yyyy = today.getFullYear();
-                            link.download = `qrgen_archive_${dd}_${mm}_${yyyy}.zip`;
-                            link.click();
+                            .then(resp => resp.blob())
+                            .then(blob => {
+                                const link = document.createElement('a');
+                                link.href = URL.createObjectURL(blob);
+                                let today = new Date()
+                                let dd = today.getDate();
+                                let mm = today.getMonth();
+                                let yyyy = today.getFullYear();
+                                link.download = `qrgen_archive_${dd}_${mm}_${yyyy}.zip`;
+                                link.click();
                         }).catch(error => console.error('Error downloading file:', error));
+                    } else {
+                        alert("Неправильное заполнение формы")
+                    }
                 } else {
                     alert("Не удалось загрузить фоновое изображение")
                 }
             } else {
                 alert("Заполните обязательные поля формы и выберите фоновое изображение")
             }
+        }
+
+        function formValidator() {
+            var size = Number(document.querySelector('input[type="size"]').value)
+            var hAlign = Number(document.querySelector('input[type="h-align"]').value)
+            var vAlign = Number(document.querySelector('input[type="v-align"]').value)
+            msg = ""
+            if (size < 0 ){
+                msg = `Параметр размер должен быть больше нуля\n`
+            }
+            if (hAlign < 0 ){
+                msg = `${msg}Параметр горизонтальное смещение должен быть больше нуля\n`
+            }
+            if (vAlign < 0 ){
+                msg = `${msg}Параметр вертикальное смещение должно быть больше нуля`
+            }
+            if (msg != "") {
+                return msg
+            }
+            return null
         }
 
         async function uploadData() {
@@ -203,15 +233,15 @@
                     </label>
                     <label>
                         <b>Размер QR-кода в пикселях</b>
-                        <input type="size" value="120"></input>
+                        <input type="size" value="120" min="0"></input>
                     </label>
                     <label>
                         <b>Горизонтальное смещение (от 0 до 100)</b>
-                        <input type="h-align" value="50"></input>
+                        <input type="h-align" value="50" min="0"></input>
                     </label>
                     <label>
                         <b>Вертикальное смещение (от 0 до 100)</b>
-                        <input type="v-align" value="70"></input>
+                        <input type="v-align" value="70" min="0"></input>
                     </label>
                     <label>
                         <b>Данные*</b>
