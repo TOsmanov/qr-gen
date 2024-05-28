@@ -6,9 +6,9 @@
         async function Preview() {
             if (document.querySelector('input[type="file"]').files.length > 0) {
                 imgHash = await uploadData()
-                if (imgHash && typeof imgHash === "string") {
+                if (imgHash && typeof imgHash == "string") {
                     valid = formValidator()
-                    if (typeof valid == null ) {
+                    if (valid === null) {
                         const resp = await fetch('/preview', {
                             method: 'POST',
                             contentType: "application/json",
@@ -45,7 +45,7 @@
                 valid = formValidator()
                 if (imgHash && typeof imgHash == "string") {
                     valid = formValidator()
-                    if (valid) {
+                    if (valid === null) {
                         await fetch('/generation', {
                             method: 'POST',
                             contentType: "application/json",
