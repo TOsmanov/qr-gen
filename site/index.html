@@ -8,7 +8,7 @@
                 imgHash = await uploadData()
                 if (imgHash && typeof imgHash == "string") {
                     valid = formValidator()
-                    if (valid === null) {
+                    if (valid == true) {
                         const resp = await fetch('/preview', {
                             method: 'POST',
                             contentType: "application/json",
@@ -45,7 +45,7 @@
                 valid = formValidator()
                 if (imgHash && typeof imgHash == "string") {
                     valid = formValidator()
-                    if (valid === null) {
+                    if (valid == true) {
                         await fetch('/generation', {
                             method: 'POST',
                             contentType: "application/json",
@@ -96,7 +96,7 @@
             if (msg != "") {
                 return msg
             }
-            return null
+            return true
         }
 
         async function uploadData() {
