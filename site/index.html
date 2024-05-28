@@ -84,13 +84,13 @@
             var hAlign = Number(document.querySelector('input[type="h-align"]').value)
             var vAlign = Number(document.querySelector('input[type="v-align"]').value)
             msg = ""
-            if (size < 0 ){
+            if (size < 0 || isNaN(size) ){
                 msg = `Параметр размер должен быть больше нуля\n`
             }
-            if (hAlign < 0 ){
+            if (hAlign < 0 ||isNaN(hAlign) ){
                 msg = `${msg}Параметр горизонтальное смещение должен быть больше нуля\n`
             }
-            if (vAlign < 0 ){
+            if (vAlign < 0 || isNaN(vAlign) ){
                 msg = `${msg}Параметр вертикальное смещение должно быть больше нуля`
             }
             if (msg != "") {
