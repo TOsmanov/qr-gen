@@ -13,51 +13,62 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-func Generation(list []string,
-	size int, qr bool, backgroundImg image.Image, font string,
-	horizontalAlign int, verticalAlign int, output string, preview bool,
-) error {
-	if !(size > 0) && !(horizontalAlign > 0) && !(verticalAlign > 0) {
+type Params struct {
+	Data            []string `json:"list,omitempty"`
+	Size            int      `json:"size"`
+	BackgroundImg   string   `json:"background"`
+	HorizontalAlign int      `json:"hAlign"`
+	VerticalAlign   int      `json:"vAlign"`
+	QRmode          bool
+	Font            string
+	Output          string
+	Preview         bool
+}
+
+func Generation(params Params) error {
+	if !(params.Size > 0) && !(params.HorizontalAlign > 0) && !(params.VerticalAlign > 0) {
 		return fmt.Errorf("numeric parameters must be greater than zero")
 	}
-	hAlign := float64(horizontalAlign) / 100
-	vAlign := float64(verticalAlign) / 100
+	hAlign := float64(params.HorizontalAlign) / 100
+	vAlign := float64(params.VerticalAlign) / 100
 	var err error
-	if preview {
-		list = []string{
+
+	backgroundImg, err := PrepareBackground(params.BackgroundImg)
+	if params.Preview {
+		params.Data = []string{
 			"https://github.com/TOsmanov/qr-gen",
 		}
 	}
-	for _, data := range list {
+	for _, data := range params.Data {
 		var upperImg image.Image
 		var filename string
-		if qr {
-			upperImg, err = prepareQR(size, data)
+		if params.QRmode {
+			upperImg, err = prepareQR(params.Size, data)
 			if err != nil {
 				return err
 			}
 		} else {
-			upperImg = prepareText(size, font, data)
+			upperImg = prepareText(params.Size, params.Font, data)
 			if err != nil {
 				return err
 			}
 		}
-		x := int(float64(backgroundImg.Bounds().Dx())*hAlign) - size/2
-		y := int(float64(backgroundImg.Bounds().Dy())*vAlign) - size/2
+		x := int(float64(backgroundImg.Bounds().Dx())*hAlign) - params.Size/2
+		y := int(float64(backgroundImg.Bounds().Dy())*vAlign) - params.Size/2
 		point := image.Point{-x, -y}
 		r := image.Rectangle{image.Point{0, 0}, backgroundImg.Bounds().Max}
 		rgba := image.NewRGBA(r)
 		draw.Draw(rgba, backgroundImg.Bounds(), backgroundImg, image.Point{0, 0}, draw.Src)
 		draw.Draw(rgba, backgroundImg.Bounds(), upperImg, point, draw.Src)
-		os.Mkdir(output, 0o750)
-		if preview {
+		os.Mkdir(params.Output, 0o750)
+		if params.Preview {
 			filename = "preview"
 		} else {
 			regex := regexp.MustCompile(`[htps]*://|/|\\|\s`)
 			filename = regex.ReplaceAllString(data, "")
 		}
 		var out *os.File
-		out, err = os.Create(fmt.Sprintf("%s/%s.jpg", output, filename))
+		out, err = os.Create(fmt.Sprintf("%s/%s.jpg", params.Output, filename))
 		if err != nil {
 			return err
 		}
@@ -96,5 +107,3 @@ func SumSha256(data []byte) string {
 	hash := sha256.Sum256(data)
 	return fmt.Sprintf("%x", hash)
 }
-
-// TODO Clean Temp files

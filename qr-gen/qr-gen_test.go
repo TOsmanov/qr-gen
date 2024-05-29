@@ -15,12 +15,18 @@ func TestGenerationQR(t *testing.T) {
 	list, err := PrepareData("../tests/data.txt")
 	assert.Nil(t, err)
 
-	backgroundImg, err := PrepareBackground("../tests/background.jpg")
-	assert.Nil(t, err)
+	params := Params{
+		Data:            list,
+		Size:            120,
+		QRmode:          true,
+		BackgroundImg:   "../tests/background.jpg",
+		HorizontalAlign: 50,
+		VerticalAlign:   75,
+		Output:          "../tests/output/",
+		Preview:         false,
+	}
 
-	err = Generation(
-		list, 120, true, backgroundImg,
-		"", 50, 75, "../tests/output/", false)
+	err = Generation(params)
 	assert.Nil(t, err)
 
 	// Comparing the number of files in a folder

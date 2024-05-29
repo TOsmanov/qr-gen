@@ -9,13 +9,27 @@ Each image will contain a qr code with an encrypted string from the data file.
 
 ### CLI
 
+#### Build
+
+Build for Windows:
+```bash
+env GOOS=windows GOARCH=386 go build -o qr-gen.exe cli/main.go
+```
+
+Build for Linux:
+```bash
+env GOOS=linux GOARCH=386 go build -o qrgen_cli cli/main.go
+```
+
+#### Using
+
 For generate images with QR-code, run:
 
 ```bash
-go run ./cmd/  -file ./tests/data.txt -background ./tests/background.jpg -size 120 -h-align 50 -v-align 75 -output output
+go run ./cmd/ -file ./tests/data.txt -background ./tests/background.jpg -size 120 -h-align 50 -v-align 75 -output output
 ```
 
-#### Arguments
+##### Arguments
 
 - `-background` – The path to the background image (default "background.jpg").
 - `-file` – The path to the data file for QR codes (default "data.txt").
@@ -25,15 +39,8 @@ go run ./cmd/  -file ./tests/data.txt -background ./tests/background.jpg -size 1
 - `-size` – Size of the upper image (default 200).
 - `-v-align` – Vertical alignment as a percentage (default 50).
 
-### Text
+**Text**
 
 To insert text, you need a font file in the `ttf` format.
 
 - `-font` – Font for text (default "./fonts/DroidSansMono.ttf").
-
-## Build
-
-Build for Windows:
-```bash
-env GOOS=windows GOARCH=386 go build -o qr-gen.exe
-```
