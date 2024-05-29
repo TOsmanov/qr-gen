@@ -5,6 +5,26 @@ linters-settings:
   funlen:
     lines: 150
     statements: 80
+  depguard:
+    rules:
+      main:
+        files:
+          - $all
+          - "!$test"
+        allow:
+          - $gostd
+          - github.com/skip2
+          - github.com/fogleman
+          - github.com/go-chi
+          - github.com/TOsmanov
+          - github.com/ilyakaznacheev
+          - github.com/go-playground
+      test:
+        files:
+          - "$test"
+        allow:
+          - $gostd
+          - github.com/stretchr
 
 linters:
   disable-all: true
@@ -12,7 +32,7 @@ linters:
     - asciicheck
     - bodyclose
     # - deadcode
-    # - depguard
+    - depguard
     - dogsled
     - dupl
     - durationcheck

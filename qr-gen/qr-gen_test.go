@@ -68,8 +68,7 @@ func TestGenerationQR(t *testing.T) {
 
 func fileSumSha256(f *os.File) (string, error) {
 	file1Sum := sha256.New()
-	_, err := io.Copy(file1Sum, f)
-	if err != nil {
+	if _, err := io.Copy(file1Sum, f); err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("%X", file1Sum.Sum(nil)), nil
