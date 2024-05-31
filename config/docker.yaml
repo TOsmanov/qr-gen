@@ -1,5 +1,7 @@
 enviroment: "docker"
 
+timezone: "Europe/Moscow"
+
 qrGen:
     outputDir: "output"
     siteDir: "site"

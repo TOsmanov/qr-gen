@@ -11,6 +11,7 @@ import (
 
 type Config struct {
 	Env        string `yaml:"env" env-default:"local"`
+	TimeZone   string `yaml:"timezone"`
 	QRGen      `yaml:"qrGen"`
 	HTTPServer `yaml:"httpServer"`
 }

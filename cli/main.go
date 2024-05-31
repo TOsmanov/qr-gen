@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	params qrgen.Params
-	data   string
+	params        qrgen.Params
+	data          string
+	backgroundImg string
 )
 
 func init() {
@@ -17,7 +18,7 @@ func init() {
 		flag.StringVar(&data, "file", "data.txt", "The path to the data file for QR codes")
 	}
 	if flag.Lookup("background") == nil {
-		flag.StringVar(&params.BackgroundImg, "background", "background.jpg", "The path to the background image")
+		flag.StringVar(&backgroundImg, "background", "background.jpg", "The path to the background image")
 	}
 	if flag.Lookup("size") == nil {
 		flag.IntVar(&params.Size, "size", 200, "Size of the upper image")
@@ -45,6 +46,10 @@ func main() {
 	list, err := qrgen.PrepareData(data)
 	if err != nil {
 		log.Fatalf("Error in data preparation: %v", err)
+	}
+	params.BackgroundImg, err = qrgen.PrepareBackground(backgroundImg)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
 	}
 
 	params.Data = list

@@ -14,12 +14,14 @@ func TestGenerationQR(t *testing.T) {
 	os.RemoveAll("../tests/output/")
 	list, err := PrepareData("../tests/data.txt")
 	assert.Nil(t, err)
+	img, err := PrepareBackground("../tests/background.jpg")
+	assert.Nil(t, err)
 
 	params := Params{
 		Data:            list,
 		Size:            120,
 		QRmode:          true,
-		BackgroundImg:   "../tests/background.jpg",
+		BackgroundImg:   img,
 		HorizontalAlign: 50,
 		VerticalAlign:   75,
 		Output:          "../tests/output/",

@@ -1,5 +1,7 @@
 enviroment: "local"
 
+timezone: "Europe/Moscow"
+
 qrGen:
     outputDir: "output"
     siteDir: "site"

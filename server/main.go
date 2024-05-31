@@ -26,12 +26,12 @@ func main() {
 
 	router := chi.NewRouter()
 
-	router.Use(mwLogger.New(log))
+	router.Use(mwLogger.New(log, cfg))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
 	router.HandleFunc("/", handlers.IndexHandler(log, cfg))
-	router.HandleFunc("/background", handlers.BackgroundHandler(log, cfg))
+	router.HandleFunc("/background", handlers.BackgroundHandler(log))
 	router.HandleFunc("/preview", handlers.PreviewHandler(log, cfg))
 	router.HandleFunc("/generation", handlers.GenerationHandler(log, cfg))
 
@@ -51,6 +51,7 @@ func main() {
 	go func() {
 		if err = srv.ListenAndServe(); err != nil {
 			log.Error("Failed to serve server", sl.Err(err))
+			srv.Close()
 		}
 	}()
 

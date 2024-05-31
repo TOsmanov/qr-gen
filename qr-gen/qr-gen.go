@@ -16,9 +16,9 @@ import (
 type Params struct {
 	Data            []string `json:"list,omitempty"`
 	Size            int      `json:"size"`
-	BackgroundImg   string   `json:"background"`
 	HorizontalAlign int      `json:"hAlign"`
 	VerticalAlign   int      `json:"vAlign"`
+	BackgroundImg   image.Image
 	QRmode          bool
 	Font            string
 	Output          string
@@ -33,7 +33,6 @@ func Generation(params Params) error {
 	vAlign := float64(params.VerticalAlign) / 100
 	var err error
 
-	backgroundImg, err := PrepareBackground(params.BackgroundImg)
 	if params.Preview {
 		params.Data = []string{
 			"https://github.com/TOsmanov/qr-gen",
@@ -53,13 +52,13 @@ func Generation(params Params) error {
 				return err
 			}
 		}
-		x := int(float64(backgroundImg.Bounds().Dx())*hAlign) - params.Size/2
-		y := int(float64(backgroundImg.Bounds().Dy())*vAlign) - params.Size/2
+		x := int(float64(params.BackgroundImg.Bounds().Dx())*hAlign) - params.Size/2
+		y := int(float64(params.BackgroundImg.Bounds().Dy())*vAlign) - params.Size/2
 		point := image.Point{-x, -y}
-		r := image.Rectangle{image.Point{0, 0}, backgroundImg.Bounds().Max}
+		r := image.Rectangle{image.Point{0, 0}, params.BackgroundImg.Bounds().Max}
 		rgba := image.NewRGBA(r)
-		draw.Draw(rgba, backgroundImg.Bounds(), backgroundImg, image.Point{0, 0}, draw.Src)
-		draw.Draw(rgba, backgroundImg.Bounds(), upperImg, point, draw.Src)
+		draw.Draw(rgba, params.BackgroundImg.Bounds(), params.BackgroundImg, image.Point{0, 0}, draw.Src)
+		draw.Draw(rgba, params.BackgroundImg.Bounds(), upperImg, point, draw.Src)
 		os.Mkdir(params.Output, 0o750)
 		if params.Preview {
 			filename = "preview"

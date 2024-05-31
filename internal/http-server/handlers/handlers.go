@@ -23,13 +23,13 @@ func IndexHandler(log *slog.Logger, cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-func BackgroundHandler(log *slog.Logger, cfg *config.Config) http.HandlerFunc {
+func BackgroundHandler(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.BackgroundHandler"
 		log = log.With(
 			slog.String("op", op),
 		)
-		UploadBackground(log, w, r, cfg)
+		UploadBackground(log, w, r)
 	}
 }
 

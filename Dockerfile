@@ -1,4 +1,4 @@
-FROM golang:latest AS builder
+FROM mirror.gcr.io/golang:latest AS builder
 COPY ./ /usr/local/go/src/qr_gen/
 WORKDIR /usr/local/go/src/qr_gen
 RUN go clean --modcache && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
