@@ -20,7 +20,7 @@ func main() {
 	var err error
 	cfg := config.MustLoad()
 
-	log := setupLogger(cfg.Env)
+	log := SetupLogger(cfg.Env)
 
 	log.Info("Starting qr-generation service", slog.String("env", cfg.Env))
 	log.Debug("DEBUG messages are enabled", slog.String("env", cfg.Env))
@@ -71,7 +71,7 @@ func main() {
 	log.Info("Server stopped")
 }
 
-func setupLogger(env string) *slog.Logger {
+func SetupLogger(env string) *slog.Logger {
 	var log *slog.Logger
 	switch env {
 	case "local":

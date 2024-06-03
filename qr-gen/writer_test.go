@@ -40,4 +40,5 @@ func TestArchive(t *testing.T) {
 
 	// Compare
 	assert.Equal(t, sum2, sum1)
+	os.Remove("../tests/archive.zip")
 }

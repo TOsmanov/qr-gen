@@ -26,7 +26,7 @@ type Params struct {
 }
 
 func Generation(params Params) error {
-	if !(params.Size > 0) && !(params.HorizontalAlign > 0) && !(params.VerticalAlign > 0) {
+	if (params.Size <= 0) && !(params.HorizontalAlign <= 0) && !(params.VerticalAlign <= 0) {
 		return fmt.Errorf("numeric parameters must be greater than zero")
 	}
 	hAlign := float64(params.HorizontalAlign) / 100
@@ -47,7 +47,7 @@ func Generation(params Params) error {
 				return err
 			}
 		} else {
-			upperImg = prepareText(params.Size, params.Font, data)
+			upperImg, err = prepareText(params.Size, params.Font, data)
 			if err != nil {
 				return err
 			}
@@ -89,17 +89,17 @@ func prepareQR(qrSize int, data string) (image.Image, error) {
 	return qrImg, nil
 }
 
-func prepareText(size int, font string, data string) image.Image {
+func prepareText(size int, font string, data string) (image.Image, error) {
 	fontSize := (float64(size) / float64(len([]rune(data)))) * 1.5
 	dc := gg.NewContext(size, int(fontSize*1.4))
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
 	dc.SetRGB(0, 0, 0)
 	if err := dc.LoadFontFace(font, fontSize); err != nil {
-		panic(err)
+		return nil, err
 	}
 	dc.DrawStringAnchored(data, float64(size/2), fontSize*1.3/2, 0.5, 0.5)
-	return dc.Image()
+	return dc.Image(), nil
 }
 
 func SumSha256(data []byte) string {

@@ -32,10 +32,10 @@ func Index(log *slog.Logger, w http.ResponseWriter,
 		if err != nil {
 			w.WriteHeader(500)
 			log.Error(
-				"Failed to prepare background",
+				"Failed to read main page",
 				op, err)
 			render.JSON(w, r,
-				response.Error("Failed to get preview"))
+				response.Error("Failed to get main page"))
 			return
 		}
 	}
