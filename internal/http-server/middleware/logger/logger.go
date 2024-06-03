@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/TOsmanov/qr-gen/internal/config"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func New(log *slog.Logger, cfg *config.Config) func(next http.Handler) http.Handler {
+func New(log *slog.Logger, loc *time.Location) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		log = log.With(
 			slog.String("component", "middleware/logger"),
@@ -26,12 +25,8 @@ func New(log *slog.Logger, cfg *config.Config) func(next http.Handler) http.Hand
 			)
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
-			loc, err := time.LoadLocation(cfg.TimeZone)
-			if err != nil {
-				log.Error("logger middleware enabled")
-			}
-
 			t1 := time.Now().In(loc)
+
 			defer func() {
 				entry.Info("request completed",
 					slog.Int("status", ww.Status()),

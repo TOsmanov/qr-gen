@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/TOsmanov/qr-gen/internal/config"
 	"github.com/TOsmanov/qr-gen/internal/http-server/handlers"
@@ -26,7 +27,13 @@ func main() {
 
 	router := chi.NewRouter()
 
-	router.Use(mwLogger.New(log, cfg))
+	loc, err := time.LoadLocation(cfg.TimeZone)
+	if err != nil {
+		loc = time.FixedZone("UTC-8", -8*60*60)
+		log.Error("Error load location, used UTC-8", slog.String("time-zone", cfg.TimeZone))
+	}
+
+	router.Use(mwLogger.New(log, loc))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 

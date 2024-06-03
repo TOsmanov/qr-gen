@@ -19,6 +19,7 @@ linters-settings:
           - github.com/TOsmanov
           - github.com/ilyakaznacheev
           - github.com/go-playground
+          - github.com/google/uuid
       test:
         files:
           - "$test"
