@@ -16,9 +16,7 @@ type Response struct {
 func IndexHandler(log *slog.Logger, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.IndexHandler"
-		log = log.With(
-			slog.String("op", op),
-		)
+		slog.Info(op)
 		Index(log, w, r, cfg)
 	}
 }
@@ -26,9 +24,7 @@ func IndexHandler(log *slog.Logger, cfg *config.Config) http.HandlerFunc {
 func BackgroundHandler(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.BackgroundHandler"
-		log = log.With(
-			slog.String("op", op),
-		)
+		slog.Info(op)
 		UploadBackground(log, w, r)
 	}
 }
@@ -36,9 +32,7 @@ func BackgroundHandler(log *slog.Logger) http.HandlerFunc {
 func PreviewHandler(log *slog.Logger, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.PreviewHandler"
-		log = log.With(
-			slog.String("op", op),
-		)
+		slog.Info(op)
 		switch r.Method {
 		case http.MethodGet:
 			GetPreview(log, w, r, cfg)
@@ -52,9 +46,6 @@ func GenerationHandler(log *slog.Logger, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GenerationHandler"
 		slog.Info(op)
-		log = log.With(
-			slog.String("op", op),
-		)
 		GenerationQR(log, w, r, cfg)
 	}
 }
