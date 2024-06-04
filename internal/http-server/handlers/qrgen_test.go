@@ -16,13 +16,14 @@ func TestIndex(t *testing.T) {
 	validData := []byte("{}")
 	r := httptest.NewRequest(http.MethodGet, "/", bytes.NewBuffer(validData))
 	w := httptest.NewRecorder()
-	t.Setenv("CONFIG_PATH", "../../../config/local.yaml")
-	cfg := config.MustLoad()
 	log := slog.New(
 		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
 	)
+	cfg := config.Config{
+		Env: "local",
+	}
 	cfg.MainPage = "../../../site/index.html"
-	Index(log, w, r, cfg)
+	Index(log, w, r, &cfg)
 
 	assert.Equal(t, w.Code, http.StatusOK)
 

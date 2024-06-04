@@ -26,7 +26,7 @@ type Params struct {
 }
 
 func Generation(params Params) error {
-	if (params.Size <= 0) && !(params.HorizontalAlign <= 0) && !(params.VerticalAlign <= 0) {
+	if (params.Size <= 0) && !(params.HorizontalAlign < 0) && !(params.VerticalAlign < 0) {
 		return fmt.Errorf("numeric parameters must be greater than zero")
 	}
 	hAlign := float64(params.HorizontalAlign) / 100

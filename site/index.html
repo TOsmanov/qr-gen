@@ -14,7 +14,6 @@
                             contentType: "application/json",
                             body: JSON.stringify({
                                 'size': Number(document.querySelector('input[type="size"]').value),
-                                'background': String(imgHash),
                                 'hAlign': Number(document.querySelector('input[type="h-align"]').value),
                                 'vAlign': Number(document.querySelector('input[type="v-align"]').value)
                             })
@@ -52,7 +51,6 @@
                             body: JSON.stringify({
                                 'list': String(document.querySelector('textarea').value).split('\n'),
                                 'size': Number(document.querySelector('input[type="size"]').value),
-                                'background': String(imgHash),
                                 'hAlign': Number(document.querySelector('input[type="h-align"]').value),
                                 'vAlign': Number(document.querySelector('input[type="v-align"]').value)
                             })

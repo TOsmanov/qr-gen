@@ -26,6 +26,7 @@ linters-settings:
         allow:
           - $gostd
           - github.com/stretchr
+          - github.com/TOsmanov
 
 linters:
   disable-all: true
