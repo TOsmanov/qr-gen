@@ -183,6 +183,7 @@ func GenerationQR(log *slog.Logger, w http.ResponseWriter,
 		return
 	}
 	w.Write(buf)
+	os.Remove(outputZip)
 }
 
 func responseOK(
