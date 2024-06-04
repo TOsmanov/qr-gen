@@ -1,14 +1,14 @@
 package qrgen
 
 import (
-	"crypto/sha256"
-	"fmt"
-	"io"
 	"os"
 	"testing"
 
+	"github.com/TOsmanov/qr-gen/internal/lib/utils"
 	"github.com/stretchr/testify/assert"
 )
+
+const ext = ".jpg"
 
 func TestGenerationQR(t *testing.T) {
 	list, err := PrepareData("../tests/data.txt")
@@ -42,29 +42,31 @@ func TestGenerationQR(t *testing.T) {
 	for _, file := range list {
 		// Output
 		var f1 *os.File
-		f1, err = os.Open("../tests/output/" + file + ".jpg")
+		f1, err = os.Open("../tests/output/" + file + ext)
 		assert.Nil(t, err)
 
 		f1.Seek(0, 0)
 		var sum1 string
-		sum1, err = fileSumSha256(f1)
+		sum1, err = utils.FileSumSha256(f1)
 		assert.Nil(t, err)
 
 		// Expected output
 		var f2 *os.File
-		f2, err = os.Open("../tests/expect-output/" + file + ".jpg")
+		f2, err = os.Open("../tests/expect-output/" + file + ext)
 		assert.Nil(t, err)
 
 		f2.Seek(0, 0)
 		var sum2 string
-		sum2, err = fileSumSha256(f2)
+		sum2, err = utils.FileSumSha256(f2)
 		assert.Nil(t, err)
 
 		// Compare
 		assert.Equal(t, sum2, sum1)
 	}
 
-	os.RemoveAll("../tests/output/")
+	if err == nil {
+		os.RemoveAll("../tests/output/")
+	}
 }
 
 func TestGenerationQRPreview(t *testing.T) {
@@ -91,7 +93,7 @@ func TestGenerationQRPreview(t *testing.T) {
 
 	f1.Seek(0, 0)
 	var sum1 string
-	sum1, err = fileSumSha256(f1)
+	sum1, err = utils.FileSumSha256(f1)
 	assert.Nil(t, err)
 
 	// Expected output
@@ -101,13 +103,15 @@ func TestGenerationQRPreview(t *testing.T) {
 
 	f2.Seek(0, 0)
 	var sum2 string
-	sum2, err = fileSumSha256(f2)
+	sum2, err = utils.FileSumSha256(f2)
 	assert.Nil(t, err)
 
 	// Compare
 	assert.Equal(t, sum2, sum1)
 
-	os.Remove("../tests/preview.jpg")
+	if err == nil {
+		os.Remove("../tests/preview.jpg")
+	}
 }
 
 func TestGenerationQRErrors(t *testing.T) {
@@ -129,14 +133,6 @@ func TestGenerationQRErrors(t *testing.T) {
 
 	err = Generation(params)
 	assert.NotNil(t, err)
-}
-
-func fileSumSha256(f *os.File) (string, error) {
-	file1Sum := sha256.New()
-	if _, err := io.Copy(file1Sum, f); err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%X", file1Sum.Sum(nil)), nil
 }
 
 func TestGenerationText(t *testing.T) {
@@ -172,27 +168,29 @@ func TestGenerationText(t *testing.T) {
 	for _, file := range list {
 		// Output
 		var f1 *os.File
-		f1, err = os.Open("../tests/output/" + file + ".jpg")
+		f1, err = os.Open("../tests/output/" + file + ext)
 		assert.Nil(t, err)
 
 		f1.Seek(0, 0)
 		var sum1 string
-		sum1, err = fileSumSha256(f1)
+		sum1, err = utils.FileSumSha256(f1)
 		assert.Nil(t, err)
 
 		// Expected output
 		var f2 *os.File
-		f2, err = os.Open("../tests/expect-output-text/" + file + ".jpg")
+		f2, err = os.Open("../tests/expect-output-text/" + file + ext)
 		assert.Nil(t, err)
 
 		f2.Seek(0, 0)
 		var sum2 string
-		sum2, err = fileSumSha256(f2)
+		sum2, err = utils.FileSumSha256(f2)
 		assert.Nil(t, err)
 
 		// Compare
 		assert.Equal(t, sum2, sum1)
 	}
 
-	os.RemoveAll("../tests/output/")
+	if err == nil {
+		os.RemoveAll("../tests/output/")
+	}
 }

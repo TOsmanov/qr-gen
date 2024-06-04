@@ -1,7 +1,6 @@
 package qrgen
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"image"
 	"image/draw"
@@ -100,9 +99,4 @@ func prepareText(size int, font string, data string) (image.Image, error) {
 	}
 	dc.DrawStringAnchored(data, float64(size/2), fontSize*1.3/2, 0.5, 0.5)
 	return dc.Image(), nil
-}
-
-func SumSha256(data []byte) string {
-	hash := sha256.Sum256(data)
-	return fmt.Sprintf("%x", hash)
 }

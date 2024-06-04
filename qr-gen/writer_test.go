@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/TOsmanov/qr-gen/internal/lib/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +26,7 @@ func TestArchive(t *testing.T) {
 
 	f1.Seek(0, 0)
 	var sum1 string
-	sum1, err = fileSumSha256(f1)
+	sum1, err = utils.FileSumSha256(f1)
 	assert.Nil(t, err)
 
 	// Expected archive
@@ -35,10 +36,12 @@ func TestArchive(t *testing.T) {
 
 	f2.Seek(0, 0)
 	var sum2 string
-	sum2, err = fileSumSha256(f2)
+	sum2, err = utils.FileSumSha256(f2)
 	assert.Nil(t, err)
 
 	// Compare
 	assert.Equal(t, sum2, sum1)
-	os.Remove("../tests/archive.zip")
+	if err == nil {
+		os.Remove("../tests/archive.zip")
+	}
 }
