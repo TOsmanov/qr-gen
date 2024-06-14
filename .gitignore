@@ -1,0 +1,7 @@
+output/
+tests/output/
+tests/fonts/
+tests/archive.zip
+temp/
+site/preview.jpg
+*.exe

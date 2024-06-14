@@ -1,0 +1,13 @@
+enviroment: "docker"
+
+timezone: "Europe/Moscow"
+
+qrGen:
+    outputDir: "output"
+    siteDir: "site"
+    tempDir: "temp"
+
+httpServer:
+    address: "qr-gen:10001"
+    timeout: 4s
+    idleTimeout: 60s

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" class="notranslate" translate="no" data-theme="dark">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <script>
+        async function Preview() {
+            if (document.querySelector('input[type="file"]').files.length > 0) {
+                imgHash = await uploadData()
+                if (imgHash && typeof imgHash == "string") {
+                    valid = formValidator()
+                    if (valid == true) {
+                        const resp = await fetch('/preview', {
+                            method: 'POST',
+                            contentType: "application/json",
+                            body: JSON.stringify({
+                                'size': Number(document.querySelector('input[type="size"]').value),
+                                'hAlign': Number(document.querySelector('input[type="h-align"]').value),
+                                'vAlign': Number(document.querySelector('input[type="v-align"]').value)
+                            })
+                        })
+                        await resp;
+
+                        hiddenImg = new Image();
+                        hiddenImg.src = `/preview.jpg?${Date.now()}`;
+
+                        document.querySelector('img').src = hiddenImg.src
+                        document.querySelector('#preview > p').hidden = true
+                        if (resp.status !== 200) {
+                            throw new Error(respData.message);
+                        }
+                    } else {
+                        alert(`Incorrect filling of the form:\n${msg}`)
+                    }
+                } else {
+                    alert("The background image could not be loaded")
+                }
+            } else {
+                alert("Fill in the required fields of the form and select a background image")
+            }
+        }
+        async function Generation() {
+            if (document.querySelector('input[type="file"]').files.length > 0 && document.querySelector('textarea').value) {
+                imgHash = await uploadData()
+                valid = formValidator()
+                if (imgHash && typeof imgHash == "string") {
+                    valid = formValidator()
+                    if (valid == true) {
+                        await fetch('/generation', {
+                            method: 'POST',
+                            contentType: "application/json",
+                            body: JSON.stringify({
+                                'list': String(document.querySelector('textarea').value).split('\n'),
+                                'size': Number(document.querySelector('input[type="size"]').value),
+                                'hAlign': Number(document.querySelector('input[type="h-align"]').value),
+                                'vAlign': Number(document.querySelector('input[type="v-align"]').value)
+                            })
+                        })
+                            .then(resp => resp.blob())
+                            .then(blob => {
+                                const link = document.createElement('a');
+                                link.href = URL.createObjectURL(blob);
+                                let today = new Date()
+                                let dd = today.getDate();
+                                let mm = today.getMonth();
+                                let yyyy = today.getFullYear();
+                                link.download = `qrgen_archive_${dd}_${mm}_${yyyy}.zip`;
+                                link.click();
+                        }).catch(error => console.error('Error downloading file:', error));
+                    } else {
+                        alert("Incorrect filling of the form")
+                    }
+                } else {
+                    alert("The background image could not be loaded")
+                }
+            } else {
+                alert("Fill in the required fields of the form and select a background image")
+            }
+        }
+
+        function formValidator() {
+            var size = Number(document.querySelector('input[type="size"]').value)
+            var hAlign = Number(document.querySelector('input[type="h-align"]').value)
+            var vAlign = Number(document.querySelector('input[type="v-align"]').value)
+            msg = ""
+            if (size < 0 || isNaN(size) ){
+                msg = `The size parameter must be greater than zero\n`
+            }
+            if (hAlign < 0 ||isNaN(hAlign) ){
+                msg = `${msg}The horizontal align parameter must be greater than zero\n`
+            }
+            if (vAlign < 0 || isNaN(vAlign) ){
+                msg = `${msg}The vertical align parameter must be greater than zero`
+            }
+            if (msg != "") {
+                return msg
+            }
+            return true
+        }
+
+        async function uploadData() {
+            const imageFile = document.querySelector('input[type="file"]').files[0]
+            const formdata = new FormData();
+            formdata.append('img', imageFile);
+            const resp = await fetch('/background', {
+                method: 'POST',
+                body: formdata
+            })
+            respData =  await resp.json();
+            if (resp.status !== 200) {
+                console.log(respData.message)
+                return new Error(respData.message);
+            }
+            return respData.data;
+        }
+    </script>
+    <style>
+        body {
+            background: white;
+            font-family: 'Roboto', sans-serif;
+        }
+        #main {
+            display: flex
+        }
+        #form, #preview {
+            width:50%;
+            height: 90vh
+        }
+        #form {
+            height: 90vh;
+            fieldset {
+                border: 0;
+            }
+            fieldset > * {
+                display: block;
+                padding: .5rem
+            }
+            textarea {
+                margin-top: .5rem;
+                margin-bottom: .5rem;
+                border-radius: 4px;
+                font-size: 1.1rem;
+                width: 98.5%;
+                height: calc(57vh - 65px);
+                background: white;
+            }
+            label {
+                height: 30px;
+            }
+            b {
+                font-size: 1.1rem;
+            }
+            input {
+                position: absolute;
+                right: 51.75%;
+                border-radius: 4px;
+                border: 1px solid black;
+                padding: 2px;
+                padding-inline: 4px;
+                font-size: 1.1rem;
+                text-align: right;
+                width: 16%;
+            }
+            textarea:focus, input:focus {
+                background-color: white;
+            }
+        }
+        #preview {
+            display: flex;
+            p {
+                text-align: center;
+            }
+            img {
+                margin: auto;
+                max-width: 100%;
+                max-height: 100%;
+            }
+        }
+        #buttons {
+            display:flex;
+            width: 95%;
+            position: absolute;
+            bottom: 20px;
+            text-align: center;
+            > button {
+                margin-inline: auto;
+                margin-block: .1rem;
+                font-size: 1.4rem;
+                padding: 8px;
+                padding-inline: 46px;
+                border-radius: 50vh;
+                background: black;
+                border: 2px solid black;
+                color: white;
+            }
+            > button:hover {
+                background: #111111;
+                border: 2px solid #111111;
+            }
+            > button:active {
+                background: #7c7c7c;
+                border: 2px solid #7c7c7c;
+            }
+        }
+    </style>
+    <meta charSet="utf-8"/>
+    <title>QR-Gen batch QR code generator</title>
+</head>
+<body>
+    <div id="main">
+        <div id="menu" style="
+        position: fixed;
+        display: flex;
+        right: 8px;
+        padding: 4px;
+        background: white;
+        border-radius: 8px;
+        padding-inline: 8px;
+    "><a href="https://github.com/TOsmanov/qr-gen" style="display: flex;color: black;text-decoration: none;"><span style="
+        font-size: 1.5rem;
+        margin: auto;
+        margin-right: .5rem;
+        font-weight: 600;
+    ">QR-Gen</span><svg height="32" aria-hidden="true" viewBox="0 0 16 16" version="1.1" width="32" data-view-component="true" class="octicon octicon-mark-github v-align-middle color-fg-default" style="
+        margin: auto;
+        fill: black;
+    ">
+                <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+            </svg></a></div>
+        <div id="form">
+            <form enctype="multipart/form-data">
+                <fieldset>
+                    <legend style="
+                    font-weight: 800;
+                    font-size: 1.3rem;
+                    text-decoration: underline;
+                ">Parameters</legend>
+                    <label for='uploadFile'>
+                        <span>Background image*</span><input type='file' accept=".jpg,.jpeg,.png" name='image'
+                        style="cursor: pointer;"/>
+                    </label>
+                    <label>
+                        <span>The size of the QR code in pixels</span>
+                        <input type="size" value="120" min="0"></input>
+                    </label>
+                    <label>
+                        <span>Horizontal align (from 0 to 100)</span>
+                        <input type="h-align" value="50" min="0"></input>
+                    </label>
+                    <label>
+                        <span>Vertical align (from 0 to 100)</span>
+                        <input type="v-align" value="70" min="0"></input>
+                    </label>
+                    <label>
+                        <span>Data*</span>
+                        <textarea 
+                        title="Add here the data that needs to be encrypted into a QR code"
+                        style="resize: none;"
+                        placeholder="https://example.com/link-1/
+https://example.com/link-2/"></textarea>
+                    </label>
+
+                </fieldset>
+            </form>
+        </div>
+        <div id="preview"><p style="opacity: .5;margin: 17%;position:absolute;">There will be a preview of the image here</p><img></div>
+        <div id="buttons">
+            <button type="generation" onclick="Generation()">Generate an archive</button>
+            <button type="preview" onclick="Preview()">Update the preview</button>
+        </div>
+    </div>
+</body>
+</html>

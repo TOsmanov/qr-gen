@@ -1,0 +1,11 @@
+services:
+    app:
+        build: .
+        container_name: qr-gen
+        volumes:
+            - ./config/:/app/config/
+            - ./site/:/app/site/
+        ports:
+            - "10001:10001"
+        environment:
+            CONFIG_PATH: "/app/config/docker.yaml"
