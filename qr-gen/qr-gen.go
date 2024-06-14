@@ -14,9 +14,9 @@ import (
 
 type Params struct {
 	Data            []string `json:"list,omitempty"`
-	Size            int      `json:"size"`
-	HorizontalAlign int      `json:"hAlign"`
-	VerticalAlign   int      `json:"vAlign"`
+	Size            int      `json:"size" default:"120"`
+	HorizontalAlign int      `json:"hAlign" default:"50"`
+	VerticalAlign   int      `json:"vAlign" default:"50"`
 	BackgroundImg   image.Image
 	QRmode          bool
 	Font            string
